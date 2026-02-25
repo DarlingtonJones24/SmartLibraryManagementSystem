@@ -10,63 +10,86 @@
     <button class="btn btn-outline-primary">Search</button>
   </form>
 
-  <div class="card card-soft">
-    <div class="table-responsive">
-      <table class="table mb-0">
-        <thead>
-          <tr>
-            <th>Book</th><th>Genre</th><th>Year</th><th style="width:220px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php foreach (($books ?? []) as $b): ?>
-            <tr>
-              <td>
-                <div class="d-flex gap-2 align-items-center">
-                  <?php
-                    $defaultCover = '/assets/Uploads/covers/default-cover.svg';
-                    $u = trim((string)($b['cover_url'] ?? ''));
-                    if ($u === '') {
-                      $src = $defaultCover;
-                    } elseif (filter_var($u, FILTER_VALIDATE_URL)) {
-                      $src = $u;
-                    } elseif (str_starts_with($u, '/images/')) {
-                      $name = basename($u);
-                      $src = $name === 'default-cover.png' ? $defaultCover : '/assets/Uploads/covers/' . $name;
-                    } elseif (str_starts_with($u, '/')) {
-                      $src = $u;
-                    } elseif (str_contains($u, 'assets/')) {
-                      $src = '/' . ltrim($u, '/');
-                    } else {
-                      $src = '/assets/Uploads/covers/' . ltrim($u, '/');
-                    }
-                  ?>
-                  <img class="cover" src="<?= htmlspecialchars($src) ?>" alt="<?= htmlspecialchars(($b['Title'] ?? 'Book') . ' cover') ?>">
-                  <div>
-                    <div class="fw-semibold"><?= htmlspecialchars($b['Title'] ?? '') ?></div>
-                    <div class="text-muted small"><?= htmlspecialchars($b['author'] ?? '') ?></div>
-                  </div>
-                </div>
-              </td>
-              <td><?= htmlspecialchars($b['Genre'] ?? '') ?></td>
-              <td><?= htmlspecialchars((string)($b['published_year'] ?? '')) ?></td>
-              <td>
-                <a class="btn btn-sm btn-secondary" href="/index.php?route=admin/books/edit&id=<?= (int)$b['id'] ?>">Edit</a>
+  <?php if (empty($books)): ?>
+    <div class="text-muted p-4">No books found.</div>
+  <?php else: ?>
+    <div id="admin-book-list" class="admin-books">
+      <?php foreach (($books ?? []) as $b): ?>
+        <?php
+          $title  = $b['Title'] ?? '';
+          $author = $b['author'] ?? ($b['Author'] ?? '');
+          $genre  = $b['Genre'] ?? '';
+          $year   = $b['published_year'] ?? '';
+          $isbn   = $b['ISBN'] ?? ($b['isbn'] ?? '');
+          $cover  = trim((string)($b['cover_url'] ?? ($b['cover'] ?? '')));
+
+          if ($cover === '') {
+            $coverPath = '/assets/Uploads/covers/default-cover.svg';
+          } else {
+            $coverPath = preg_match('#(^/|assets/Uploads/)#i', $cover)
+              ? '/' . ltrim($cover, '/')
+              : '/assets/Uploads/covers/' . rawurlencode($cover);
+          }
+
+          $available = $b['available'] ?? $b['available_copies'] ?? $b['available_count'] ?? null;
+          $total     = $b['total'] ?? $b['quantity'] ?? $b['copies'] ?? $b['total_copies'] ?? null;
+        ?>
+
+        <div class="list-card card-soft mb-3">
+          <div class="list-inner d-flex align-items-center gap-3">
+            <!-- LEFT: cover (fixed) -->
+            <div class="list-thumb flex-shrink-0">
+              <img class="admin-cover" src="<?= htmlspecialchars($coverPath) ?>" alt="<?= htmlspecialchars($title) ?>">
+            </div>
+
+            <!-- MIDDLE: details (flex-grow) -->
+            <div class="list-details flex-grow-1" style="min-width:0;">
+              <div class="list-title fw-semibold"><?= htmlspecialchars($title) ?></div>
+
+              <div class="text-muted small">
+                Author: <?= htmlspecialchars($author) ?>
+                <?php if ($genre): ?> • <?= htmlspecialchars($genre) ?><?php endif; ?>
+                <?php if ($year): ?> • <?= htmlspecialchars($year) ?><?php endif; ?>
+              </div>
+
+              <div class="list-meta mt-2 small text-muted d-flex flex-wrap gap-2 align-items-center">
+                <?php if (!empty($isbn)): ?><div># <?= htmlspecialchars($isbn) ?></div><?php endif; ?>
+                <?php if ($total !== null): ?><div>• Copies: <?= htmlspecialchars($total) ?></div><?php endif; ?>
+              </div>
+
+              <div class="mt-2">
+                <?php if ($available !== null): ?>
+                  <?php if ((int)$available > 0): ?>
+                    <span class="badge badge-available"><?= htmlspecialchars($available) ?>/<?= htmlspecialchars($total ?? $available) ?></span>
+                  <?php else: ?>
+                    <span class="badge badge-unavailable">Unavailable</span>
+                  <?php endif; ?>
+                <?php endif; ?>
+              </div>
+
+              <!-- MOBILE actions (below content) -->
+              <div class="list-actions-mobile d-flex d-md-none gap-2 mt-3 flex-wrap">
+                <a class="btn btn-sm btn-warning" href="/index.php?route=admin/books/edit&id=<?= (int)$b['id'] ?>">Edit</a>
                 <a class="btn btn-sm btn-outline-primary" href="/index.php?route=book/detail&id=<?= (int)$b['id'] ?>">View</a>
-
-                <form method="post" action="/index.php?route=admin/books/delete" class="d-inline">
+                <form method="post" action="/index.php?route=admin/books/delete" class="d-inline" onsubmit="return confirm('Delete this book?');">
                   <input type="hidden" name="id" value="<?= (int)$b['id'] ?>">
-                  <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this book?')">Delete</button>
+                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </form>
-              </td>
-            </tr>
-          <?php endforeach; ?>
+              </div>
+            </div>
 
-          <?php if (empty($books)): ?>
-            <tr><td colspan="4" class="text-muted p-4">No books found.</td></tr>
-          <?php endif; ?>
-        </tbody>
-      </table>
+            <!-- RIGHT: actions pinned (desktop) -->
+            <div class="list-actions d-none d-md-flex ms-auto flex-nowrap gap-2 align-items-center">
+              <a class="btn btn-sm btn-warning" href="/index.php?route=admin/books/edit&id=<?= (int)$b['id'] ?>">Edit</a>
+              <a class="btn btn-sm btn-outline-primary" href="/index.php?route=book/detail&id=<?= (int)$b['id'] ?>">View</a>
+              <form method="post" action="/index.php?route=admin/books/delete" class="d-inline mb-0" onsubmit="return confirm('Delete this book?');">
+                <input type="hidden" name="id" value="<?= (int)$b['id'] ?>">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      <?php endforeach; ?>
     </div>
-  </div>
+  <?php endif; ?>
 </div>

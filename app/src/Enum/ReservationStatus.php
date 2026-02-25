@@ -2,9 +2,8 @@
 namespace App\Enum;
 
 /**
- * ReservationStatus enum values are string representations stored in the DB.
- * Note: the DB uses the American spelling 'canceled' (single "l"),
- * so the enum value for the cancelled state is 'canceled'.
+ * Reservation status values stored in the database.
+ * Note: DB uses 'canceled' (one "l").
  */
 enum ReservationStatus: string
 {

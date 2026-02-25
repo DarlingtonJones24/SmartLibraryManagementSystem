@@ -18,9 +18,6 @@ use App\Framework\Auth;
       $path = rtrim($path, '/') ?: '/';
       $loggedIn = Auth::check();
 
-      // When at root '/', show Dashboard as active for logged-in users,
-      // otherwise show Catalog as active for guests. For other paths
-      // keep the existing matching behaviour.
       if ($path === '/') {
         $dashboardActive = $loggedIn ? ' active' : '';
         $catalogActive = $loggedIn ? '' : ' active';
@@ -33,13 +30,35 @@ use App\Framework\Auth;
       $settingsActive  = (strpos($path, '/settings') === 0) ? ' active' : '';
     ?>
 
-    <nav class="nav flex-column px-2">
-      <a class="nav-link d-flex align-items-center px-3 py-2<?= $dashboardActive ?>" href="/dashboard"><i class="bi bi-grid-1x2-fill me-2"></i> Dashboard</a>
-      <a class="nav-link d-flex align-items-center px-3 py-2<?= $catalogActive ?>" href="/catalog"><i class="bi bi-book-half me-2"></i> Catalog</a>
-      <a class="nav-link d-flex align-items-center px-3 py-2<?= $loansActive ?>" href="/loans"><i class="bi bi-journal-bookmark me-2"></i> My Loans</a>
-      <a class="nav-link d-flex align-items-center px-3 py-2<?= $reservActive ?>" href="/reservations"><i class="bi bi-calendar-check me-2"></i> My Reservations</a>
-      <a class="nav-link d-flex align-items-center px-3 py-2<?= $settingsActive ?>" href="/settings"><i class="bi bi-gear me-2"></i> Settings</a>
-    </nav>
+    <?php
+      $user = Auth::check() ? Auth::user() : null;
+      $isLibrarian = $user && in_array(strtolower((string)($user['role'] ?? '')), ['librarian','admin']);
+
+      // Active states for admin links
+      $adminDashboardActive = (strpos($path, '/admin/dashboard') === 0) ? ' active' : '';
+      $adminBooksActive = (strpos($path, '/admin/books') === 0) ? ' active' : '';
+      $adminLoansActive = (strpos($path, '/admin/loans') === 0) ? ' active' : '';
+      $adminResActive = (strpos($path, '/admin/reservation') === 0) ? ' active' : '';
+      $adminSettingsActive = (strpos($path, '/admin/settings') === 0) ? ' active' : '';
+    ?>
+
+    <?php if ($isLibrarian): ?>
+      <nav class="nav flex-column px-2">
+        <a class="nav-link d-flex align-items-center px-3 py-2<?= $adminDashboardActive ?>" href="/admin/dashboard"><i class="bi bi-grid-1x2-fill me-2"></i> Admin Dashboard</a>
+        <a class="nav-link d-flex align-items-center px-3 py-2<?= $adminBooksActive ?>" href="/admin/books"><i class="bi bi-book me-2"></i> Manage Books</a>
+        <a class="nav-link d-flex align-items-center px-3 py-2<?= $adminLoansActive ?>" href="/admin/loans"><i class="bi bi-journal-bookmark me-2"></i> Manage Loans</a>
+        <a class="nav-link d-flex align-items-center px-3 py-2<?= $adminResActive ?>" href="/admin/reservation"><i class="bi bi-calendar-check me-2"></i> Manage Reservations</a>
+        <a class="nav-link d-flex align-items-center px-3 py-2<?= $adminSettingsActive ?>" href="/admin/settings"><i class="bi bi-gear me-2"></i> Admin Settings</a>
+      </nav>
+    <?php else: ?>
+      <nav class="nav flex-column px-2">
+        <a class="nav-link d-flex align-items-center px-3 py-2<?= $dashboardActive ?>" href="/dashboard"><i class="bi bi-grid-1x2-fill me-2"></i> Dashboard</a>
+        <a class="nav-link d-flex align-items-center px-3 py-2<?= $catalogActive ?>" href="/catalog"><i class="bi bi-book-half me-2"></i> Catalog</a>
+        <a class="nav-link d-flex align-items-center px-3 py-2<?= $loansActive ?>" href="/loans"><i class="bi bi-journal-bookmark me-2"></i> My Loans</a>
+        <a class="nav-link d-flex align-items-center px-3 py-2<?= $reservActive ?>" href="/reservations"><i class="bi bi-calendar-check me-2"></i> My Reservations</a>
+        <a class="nav-link d-flex align-items-center px-3 py-2<?= $settingsActive ?>" href="/settings"><i class="bi bi-gear me-2"></i> Settings</a>
+      </nav>
+    <?php endif; ?>
 
     <div class="sidebar-footer px-3 mt-auto text-white-50">© 2024 Smart Library</div>
   </aside>
@@ -67,7 +86,7 @@ use App\Framework\Auth;
 
         <div class="d-flex align-items-center gap-3 user-area">
           <?php if (Auth::check()): $u = Auth::user();
-                // If session doesn't include the user's full name (older sessions), fetch and persist it.
+                // If name is missing in session, load it once from DB and save it.
                 if (empty($u['name']) && !empty($u['id'])) {
                   try {
                     $repo = new \App\Repository\UserRepository();
@@ -76,7 +95,7 @@ use App\Framework\Auth;
                       $u['name'] = $dbu['name'];
                       \App\Framework\Auth::login($u);
                     }
-                  } catch (\Throwable $ex) { /* ignore DB lookup errors here */ }
+                  } catch (\Throwable $ex) { /* skip name lookup errors here */ }
                 }
 
                 $notifCount = (int)($_SESSION['notifications_count'] ?? $_SESSION['notif_count'] ?? 0);
@@ -110,7 +129,6 @@ use App\Framework\Auth;
         </div>
       </div>
     </nav>
-    <!-- main content starts here (views will render inside app-main) -->
     <div class="container-fluid mt-3">
       <div class="row">
         <div class="col-12">
@@ -118,18 +136,14 @@ use App\Framework\Auth;
         </div>
       </div>
     </div>
-    <!-- VIEW CONTENT WILL APPEAR AFTER THIS -->
     <?php else: ?>
-    <!-- For pages which hide the sidebar (like login), keep a simple container placeholder so the view can render a full-bleed split layout -->
     <div class="container-fluid mt-3">
       <div class="row">
         <div class="col-12">
-          <!-- content placeholder for full-width pages -->
         </div>
       </div>
     </div>
     <?php endif; ?>
 
 <?php
-// Note: `Shared/footer.php` will close the opened layout containers.
 ?>

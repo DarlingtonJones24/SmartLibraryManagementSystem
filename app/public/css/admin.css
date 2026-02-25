@@ -1,0 +1,323 @@
+/* Admin theme: sidebar + main content styles to match admin screenshots */
+
+:root {
+  --admin-bg: #4b3224; /* dark brown */
+  --admin-accent: #f39c2b; /* orange */
+  --admin-accent-yellow: #f3c04a; /* brighter yellow accent for sidebar */
+  --admin-surface: #fbf6f2; /* light surface */
+  --muted: #8b7a73;
+  --card-border: rgba(0,0,0,0.06);
+}
+
+/* Sidebar */
+.site-sidebar {
+  width: 220px;
+  background: var(--admin-bg);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-top: 18px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 20;
+}
+.sidebar-brand { padding: 0 16px 18px 16px; }
+.sidebar-brand a { text-decoration: none; color: inherit; }
+.sidebar-brand div[style] { background: var(--admin-accent-yellow) !important; }
+.site-sidebar .nav { padding: 0 8px; }
+.site-sidebar .nav-link {
+  color: rgba(255,255,255,0.95);
+  padding: 12px 12px;
+  border-radius: 8px;
+  margin: 6px 0;
+  display: flex;
+  align-items: center;
+  transition: background 160ms ease, color 160ms ease, transform 120ms ease;
+  background: transparent;
+  border-left: 4px solid transparent;
+}
+.site-sidebar .nav-link i { font-size: 18px; width: 28px; text-align: center; }
+.site-sidebar .nav-link:hover {
+  background: rgba(243,192,74,0.08); /* subtle yellow hover */
+  color: #fff;
+  text-decoration: none;
+  transform: translateX(2px);
+}
+.site-sidebar .nav-link.active {
+  background: var(--admin-accent-yellow);
+  color: #2f1f1a; /* dark text for contrast */
+  border-left-color: rgba(0,0,0,0.06);
+  box-shadow: none;
+}
+.site-sidebar .sidebar-footer { padding: 18px 16px; font-size: 13px; color: rgba(255,255,255,0.6); }
+
+/* Push main content to the right of fixed sidebar */
+.app-main { margin-left: 220px; min-height: 100vh; }
+.app-main.no-sidebar { margin-left: 0; }
+
+/* Top bar */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  padding: 12px 0;
+  position: sticky;
+  top:0;
+  z-index:10;
+}
+.topbar .breadcrumb .breadcrumb-item a { color: var(--muted); }
+.topbar .user-area { margin-left: auto; }
+.user-welcome { color: var(--muted); font-size: 14px; }
+.user-initials {
+  background: var(--admin-accent-yellow);
+  color:#fff;
+  border-radius:50%;
+  width:42px;
+  height:42px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+}
+.notif-badge {
+  position:absolute;
+  right:4px;
+  top:-6px;
+  background:#f39c2b;
+  color:#fff;
+  border-radius:999px;
+  padding:2px 6px;
+  font-size:12px;
+}
+
+/* Cards and lists */
+.card-soft { background: var(--admin-surface); border-radius:10px; border:1px solid var(--card-border); }
+.card-soft h5, .card-soft h4 { margin:0 0 8px 0; }
+
+/* Table and controls styling to match screenshots */
+.table thead th { border-bottom: 1px solid rgba(0,0,0,0.06); color: #6b4f3f; }
+.table td, .table th { vertical-align: middle; }
+.btn-primary { background: var(--admin-accent); border-color: var(--admin-accent); }
+.btn-outline-primary { color: var(--admin-accent); border-color: rgba(243,156,43,0.15); }
+.btn-sm { border-radius:8px; }
+.btn-danger { background: transparent; border: 1px solid rgba(220,53,69,0.12); color: #c0392b; }
+
+/* Cover images */
+.cover { width:72px; height:auto; object-fit:cover; border-radius:6px; }
+/* ensure table first column (cover) doesn't shrink */
+table td:first-child, table th:first-child { width: 92px; }
+
+/* small badge look used in admin lists */
+.badge-soft { padding:6px 10px; border-radius:999px; background:#fff2e6; color:#7a4b2a; }
+
+/* responsive tweaks */
+@media (max-width: 991px) {
+  .site-sidebar { width: 72px; }
+  .sidebar-brand div { display: none; }
+  .app-main { margin-left: 72px; }
+  .site-sidebar .nav-link span { display: none; }
+}
+
+/* Admin-only small cover used in admin tables/lists to match previous thumbnail size */
+.admin-cover { display:block; width:84px; height:112px; max-width:84px; object-fit:cover; border-radius:6px; }
+.admin-cover-col { width: 100px; vertical-align: middle; }
+table.table td.admin-cover-col, table.table th.admin-cover-col { vertical-align: middle; }
+
+/* Actions column: keep table layout & sizes, but align buttons using flexbox */
+.table td .list-actions,
+.table th .list-actions,
+.table td .actions-wrapper,
+.table th .actions-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+}
+.table td .list-actions form,
+.table td .actions-wrapper form { display: inline-flex; margin: 0; }
+.table td .list-actions .btn,
+.table td .actions-wrapper .btn { white-space: nowrap; }
+
+/* =========================================================
+   ADMIN BOOK LIST (CARD/LIST VIEW) - FIXED FAR RIGHT ACTIONS
+   ========================================================= */
+
+.admin-books .list-card {
+  width: 100%;
+  display: block;
+}
+.admin-books .list-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+.admin-books .list-thumb {
+  flex: 0 0 84px;
+}
+.admin-books .list-thumb img {
+  width: 84px;
+  height: 112px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}
+.admin-books .list-details {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.admin-books .list-actions {
+  margin-left: auto;
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.admin-books .list-actions form { margin: 0; display: inline-flex; }
+.admin-books .list-actions-mobile .btn { margin-right: .5rem; }
+
+/* -----------------------------
+   Dashboard: Stats + Recent UI
+   ----------------------------- */
+
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px;
+  border-radius: 12px;
+  background: rgba(250,245,243,0.9);
+  box-shadow: 0 1px 2px rgba(16,16,16,0.04);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.stat-card .stat-left { display:block; }
+.stat-card .stat-desc { font-size:13px; color:var(--muted); margin-bottom:6px; }
+.stat-card .stat-value { font-size:26px; font-weight:700; color: #3f2a23; }
+.stat-card .stat-sub { font-size:12px; color:var(--muted); }
+
+.stat-icon {
+  width:40px;
+  height:40px;
+  border-radius:8px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  flex:0 0 48px;
+  margin-left:10px;
+}
+.stat-icon svg { width:16px; height:16px; }
+
+.stat-icon.book { background: #ffd9b2; color:#8a4b1b; }
+.stat-icon.available { background:#dff3ea; color:#1a7a5a; }
+.stat-icon.loans { background:#e6f2ff; color:#2a5b9a; }
+.stat-icon.overdue { background:#ffe6e6; color:#b33a3a; }
+.stat-icon.reservations { background:#fff0db; color:#a86a13; }
+
+.dashboard-panels {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:20px;
+  margin-top:20px;
+}
+.recent-panel {
+  border-radius:12px;
+  background:var(--admin-surface);
+  padding:16px;
+  border:1px solid var(--card-border);
+}
+.recent-panel h5 { margin:0 0 12px 0; }
+
+.recent-list { display:flex; flex-direction:column; gap:10px; }
+.recent-item {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  padding:12px;
+  border-radius:10px;
+  background: rgba(249,244,241,0.7);
+  border:1px solid rgba(0,0,0,0.03);
+}
+.recent-thumb {
+  flex:0 0 64px;
+  width:64px;
+  height:88px;
+  overflow:hidden;
+  border-radius:6px;
+}
+.recent-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+.recent-details { flex:1 1 auto; min-width:0; }
+.recent-title { font-weight:600; color:#3f2a23; }
+.recent-meta { font-size:13px; color:var(--muted); margin-top:4px; }
+
+.status-badge {
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:600;
+  white-space:nowrap;
+}
+.badge-active { background:#e6f7ea; color:#1b8a4f; }
+.badge-overdue { background:#fdecea; color:#c0392b; }
+.badge-pending { background:#fff4e6; color:#a86a13; }
+.recent-item .status-badge { margin-left:auto; }
+
+/* Cancelled reservation badge */
+.badge-cancelled { background:#f3f4f6; color:#6b7280; }
+
+@media (max-width: 991px) {
+  .dashboard-panels { grid-template-columns: 1fr; }
+}
+
+/* =========================
+   DASHBOARD PAGE (POLISHED)
+   ========================= */
+
+.admin-dashboard-page {
+  padding: 18px 18px 28px;
+}
+
+.admin-page-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 44px;
+  font-weight: 700;
+  margin: 6px 0 2px;
+  color: #2f1f1a;
+}
+
+.admin-page-subtitle {
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.dashboard-stats { margin-top: 10px; }
+.recent-panel { min-height: 260px; }
+
+.stat-card {
+  background: #fbf6f2;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 1px 2px rgba(16,16,16,0.04);
+}
+
+.recent-panel {
+  background: #fbf6f2;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 1px 2px rgba(16,16,16,0.04);
+}
+
+.recent-item {
+  background: rgba(249,244,241,0.85);
+}

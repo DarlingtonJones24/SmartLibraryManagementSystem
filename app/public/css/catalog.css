@@ -33,7 +33,7 @@
 .list-title{ font-family: Georgia, 'Times New Roman', serif; font-weight:700; font-size:1.25rem; color:#2b2b2b; margin-bottom:6px; }
 .list-meta{ color:var(--muted); font-size:.95rem; margin-bottom:8px; display:flex; gap:12px; align-items:center; }
 .list-meta i{ color:var(--muted); margin-right:6px; }
-.list-actions{ flex:0 0 110px; text-align:right; }
+.list-actions{ flex:0 0 160px; text-align:right; display:flex; gap:8px; align-items:center; justify-content:flex-end; }
 .btn-accent{ background:linear-gradient(180deg,var(--accent),var(--accent-dark)); color:#fff; border-radius:8px; padding:.55rem .9rem; border:none; box-shadow:0 6px 14px rgba(224,138,47,0.12); }
 
 .badge-available{ background:var(--success); color:#fff; padding:.25rem .5rem; border-radius:999px; font-size:.8rem; }
@@ -127,7 +127,10 @@
 .badge-available{ background:#10b981; color:#fff; padding:.25rem .5rem; border-radius:999px; font-size:.8rem; }
 .badge-unavailable{ background:#ef4444; color:#fff; padding:.25rem .5rem; border-radius:999px; font-size:.8rem; }
 .badge-low{ background:#f59e0b; color:#fff; padding:.25rem .5rem; border-radius:999px; font-size:.8rem; }
-.list-actions{ flex:0 0 110px; text-align:right; }
+.list-actions{ flex:0 0 160px; text-align:right; display:flex; gap:8px; align-items:center; justify-content:flex-end; }
+/* Ensure forms inside actions don't force line-breaks */
+.list-actions form{ display:inline-flex; margin:0; }
+.list-actions .btn{ white-space:nowrap; }
 .btn-accent{ background:var(--accent); border-color:transparent; color:#fff; border-radius:.5rem; padding:.5rem .9rem; }
 
 .input-group .form-control{ border-radius:.5rem 0 0 .5rem; }

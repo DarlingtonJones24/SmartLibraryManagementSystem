@@ -15,6 +15,7 @@ use App\Controllers\DashboardController;
 use App\Framework\Auth;
 use App\Services\LoanService;
 use App\Services\ReservationService;
+use App\Controllers\AdminController;
 
 function render(string $viewPath, array $vars = []): void {
     \App\Framework\TempData::start();
@@ -22,8 +23,9 @@ function render(string $viewPath, array $vars = []): void {
     extract($vars, EXTR_SKIP);
 
     $baseViews = __DIR__ . '/../src/Views';
-    // Support both styles: framework view paths (e.g. 'Books/index')
-    // and legacy file paths with extension (e.g. 'Auth/login.php').
+    // I support both style formats here:
+    // - Framework paths like 'Books/index'
+    // - Legacy paths like 'Auth/login.php'
     if (str_ends_with($viewPath, '.php')) {
         $full = $baseViews . '/' . ltrim($viewPath, '/');
 
@@ -40,13 +42,13 @@ function render(string $viewPath, array $vars = []): void {
         return;
     }
 
-    // Delegate to framework View renderer for normalized view paths.
+    // Use the framework renderer for normal view paths
     \App\Framework\View::render($viewPath, $vars);
 }
 
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
-    // Home: send logged-in users to dashboard, guests to catalog
+    // Home route: logged-in users go to dashboard, guests go to catalog
     $r->addRoute('GET', '/', function() {
         if (\App\Framework\Auth::check()) {
             (new DashboardController())->index();
@@ -55,11 +57,11 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
         (new BookController())->index();
     });
-    $r->addRoute('GET', '/index.php', function() { (new HomeController())->index(); }); // fixes /index.php 404
-    // Support POSTs to /index.php?route=... for environments without URL rewriting
+    $r->addRoute('GET', '/index.php', function() { (new HomeController())->index(); }); // keep /index.php working
+    // Legacy POST support for /index.php?route=...
     $r->addRoute('POST', '/index.php', function() {
-        $route = trim($_GET['route'] ?? '');
-        try { error_log('[index.php legacy POST] route=' . $route . ' REQUEST_URI=' . ($_SERVER['REQUEST_URI'] ?? '') . ' POST=' . json_encode($_POST)); } catch (\Throwable $_) {}
+        // Read route from query string or POST body
+        $route = trim($_REQUEST['route'] ?? '');
         switch ($route) {
             case 'reserve':
                 (new ReservationController())->reserve();
@@ -73,6 +75,18 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
             case 'loan/return':
                 (new LoanController())->returnBook();
                 break;
+            case 'admin/books/create':
+                (new \App\Controllers\AdminController())->create();
+                break;
+            case 'admin/books/edit':
+                (new \App\Controllers\AdminController())->edit();
+                break;
+            case 'admin/books/delete':
+                (new \App\Controllers\AdminController())->delete();
+                break;
+            case 'admin/reservation/process':
+                (new \App\Controllers\AdminController())->processReservation();
+                break;
             default:
                 http_response_code(404);
                 echo '404 - Page Not Found';
@@ -80,18 +94,18 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
         }
     });
 
-    // Catalog (Books) -> controller-backed
+    // Catalog routes
     $r->addRoute('GET', '/catalog', function() { (new BookController())->index(); });
     $r->addRoute('GET', '/books', function() { (new BookController())->index(); });
     $r->addRoute('GET', '/books/{id:\\d+}', function($vars) { $_GET['id'] = $vars['id']; (new BookController())->detail(); });
 
-    // Auth (GET and POST)
+    // Auth routes
     $r->addRoute('GET', '/login', function() { (new AuthController())->loginForm(); });
     $r->addRoute('POST', '/login', function() { (new AuthController())->loginPost(); });
-    // Forgot password (simple placeholder to avoid 404)
+    // Forgot password page (simple placeholder)
     $r->addRoute('GET', '/forgot-password', function() { render('Auth/forgot-password.php'); });
     $r->addRoute('POST', '/forgot-password', function() {
-        // simple handler: accept email and redirect back to login with flash
+        // Simple flow: accept email then go back to login with flash
         $email = trim($_POST['email'] ?? '');
         if ($email !== '') {
             \App\Framework\TempData::start();
@@ -100,7 +114,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
         header('Location: /login');
         exit;
     });
-    // Register is a simple view (no controller methods currently implemented)
+    // Register page and submit handler
     $r->addRoute('GET', '/register', function() { render('Auth/register.php'); });
     $r->addRoute('POST', '/register', function() {
         $name = trim($_POST['name'] ?? '');
@@ -130,7 +144,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
         }
 
         $pdo = \App\Framework\Database::pdo();
-        // check existing
+        // Check if email already exists
         $stmt = $pdo->prepare('SELECT id FROM users WHERE Email = ?');
         $stmt->execute([$email]);
         if ($stmt->fetch()) {
@@ -156,13 +170,14 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     });
     $r->addRoute('GET', '/logout', function() { (new AuthController())->logout(); });
 
-    // Loan & Reservation POST handlers
+    // Loan and reservation POST routes
     $r->addRoute('POST', '/loan/borrow', function() { (new LoanController())->borrow(); });
     $r->addRoute('POST', '/loan/return', function() { (new LoanController())->returnBook(); });
     $r->addRoute('POST', '/reserve', function() { (new ReservationController())->reserve(); });
     $r->addRoute('POST', '/reserve/cancel', function() { (new ReservationController())->cancel(); });
+    $r->addRoute('POST', '/admin/reservation/process', function() { (new AdminController())->processReservation(); });
 
-    // Member dashboard (require login)
+    // Member dashboard routes (login required)
     $r->addRoute('GET', '/dashboard', function() { (new DashboardController())->index(); });
     $r->addRoute('GET', '/dashboard/loans', function() {
         Auth::requireLogin();
@@ -177,7 +192,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
         render('MemberDashboard/reservation.php', ['reservations' => $rs->getMyReservations((int)$user['id'])]);
     });
 
-    // Legacy/shortcut routes for navbar links
+    // Shortcut routes used by navbar links
     $r->addRoute('GET', '/loans', function() {
         Auth::requireLogin();
         $user = Auth::user();
@@ -190,27 +205,97 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
         $rs = new ReservationService();
         render('MemberDashboard/reservation.php', ['reservations' => $rs->getMyReservations((int)$user['id'])]);
     });
+    $r->addRoute('GET', '/notifications', function() {
+        Auth::requireLogin();
+        render('alerts.php');
+    });
+    $r->addRoute('GET', '/alerts', function() {
+        Auth::requireLogin();
+        render('alerts.php');
+    });
     $r->addRoute('GET', '/settings', function() { Auth::requireLogin(); render('MemberDashboard/settings.php'); });
 
-    // Admin
-    $r->addRoute('GET', '/admin/dashboard', function() { render('Admin/dashboard.php'); });
-    $r->addRoute('GET', '/admin/books', function() { render('Admin/books/index.php'); });
-    $r->addRoute('GET', '/admin/books/create', function() { render('Admin/books/create.php'); });
-    $r->addRoute('GET', '/admin/books/edit', function() { render('Admin/books/edit.php'); });
+    // Member profile edit routes
+    $r->addRoute('GET', '/profile/edit', function() {
+        Auth::requireLogin();
+        $user = Auth::user();
+        render('MemberDashboard/edit_profile.php', ['user' => $user]);
+    });
 
-    $r->addRoute('GET', '/admin/loans', function() { render('Admin/loans/index.php'); });
-    $r->addRoute('GET', '/admin/reservation', function() { render('Admin/reservation/index.php'); });
+    $r->addRoute('POST', '/profile/edit', function() {
+        Auth::requireLogin();
+        $user = Auth::user();
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+
+        \App\Framework\TempData::start();
+
+        if ($name === '' || $email === '') {
+            \App\Framework\TempData::set('flash', ['message' => 'Name and email are required.', 'type' => 'danger']);
+            header('Location: /profile/edit');
+            exit;
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            \App\Framework\TempData::set('flash', ['message' => 'Invalid email address.', 'type' => 'danger']);
+            header('Location: /profile/edit');
+            exit;
+        }
+
+        $pdo = \App\Framework\Database::pdo();
+        // Make sure email is not used by someone else
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE Email = ? AND id != ?');
+        $stmt->execute([$email, $user['id']]);
+        if ($stmt->fetch()) {
+            \App\Framework\TempData::set('flash', ['message' => 'That email is already in use.', 'type' => 'danger']);
+            header('Location: /profile/edit');
+            exit;
+        }
+
+        $upd = $pdo->prepare('UPDATE users SET name = ?, Email = ?, updated_at = NOW() WHERE id = ?');
+        $ok = $upd->execute([$name, $email, $user['id']]);
+
+        if ($ok) {
+            \App\Framework\TempData::set('flash', ['message' => 'Profile updated.', 'type' => 'success']);
+            // Update user data in session if session is active
+            if (function_exists('session_status') && session_status() === PHP_SESSION_ACTIVE) {
+                $_SESSION['user']['name'] = $name;
+                $_SESSION['user']['Email'] = $email;
+                $_SESSION['user']['email'] = $email;
+            }
+            header('Location: /settings');
+            exit;
+        }
+
+        \App\Framework\TempData::set('flash', ['message' => 'Failed to update profile.', 'type' => 'danger']);
+        header('Location: /profile/edit');
+        exit;
+    });
+
+    // Admin routes
+    $r->addRoute('GET', '/admin/dashboard', function() { (new AdminController())->dashboard(); });
+    $r->addRoute('GET', '/admin/books', function() { (new AdminController())->books(); });
+    $r->addRoute('GET', '/admin/books/create', function() { (new AdminController())->showCreateForm(); });
+    $r->addRoute('GET', '/admin/books/edit', function() { (new AdminController())->showEditForm(); });
+
+    $r->addRoute('GET', '/admin/loans', function() { (new AdminController())->loansPage(); });
+    $r->addRoute('GET', '/admin/loans/show', function() { (new AdminController())->loanDetailPage(); });
+    $r->addRoute('GET', '/loan/detail', function() { (new AdminController())->loanDetailPage(); });
+    $r->addRoute('GET', '/admin/reservation', function() { (new AdminController())->reservationsPage(); });
+    $r->addRoute('GET', '/admin/settings', function() {
+        Auth::requireLibrarian();
+        render('MemberDashboard/settings.php');
+    });
 
 });
 
 $httpMethod = $_SERVER['REQUEST_METHOD'];
 
-// Legacy support: if an old query-style route is used (index.php?route=...),
-// translate it into the modern path form so old views keep working.
+// Legacy support: convert old query-style routes into modern paths
 $uri = strtok($_SERVER['REQUEST_URI'], '?');
 if (isset($_GET['route'])) {
     $legacy = trim($_GET['route'], '/');
-    // map a few common legacy routes to new paths
+    // Map common old routes
     if ($legacy === 'home') {
         $uri = '/';
     } elseif ($legacy === 'catalog') {
@@ -232,7 +317,7 @@ if (isset($_GET['route'])) {
     } elseif ($legacy === 'catalog' && isset($_GET['q'])) {
         $uri = '/catalog';
     } else {
-        // fallback: prepend slash and use route string
+        // Fallback: use the route value as a path
         $uri = '/' . $legacy;
     }
 }

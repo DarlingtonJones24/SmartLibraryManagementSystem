@@ -17,7 +17,7 @@ class Controller
 
     protected function redirect(string $path): void
     {
-        // Normalize legacy book detail redirects of the form 'book/detail&id=123' or 'book/detail?id=123'
+        // Handle old book detail redirect formats
         if (preg_match('#^book/detail[&?]id=(\d+)$#', $path, $m)) {
             $path = '/books/' . $m[1];
         }

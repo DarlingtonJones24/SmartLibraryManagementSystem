@@ -20,6 +20,21 @@ class ReservationService implements IReservationService
         return $this->reservations->getByUser($userId);
     }
 
+    public function getRecentForAdminDashboard(): array
+    {
+        return $this->reservations->getRecentWaitingWithBooks(3);
+    }
+
+    public function getWaitingCount(): int
+    {
+        return $this->reservations->countWaiting();
+    }
+
+    public function getAllActiveReservations(): array
+    {
+        return $this->reservations->getAllActiveWithDetails();
+    }
+
     public function reserve(int $userId, int $bookId): bool
     {
         if ($this->reservations->hasActiveReservation($userId, $bookId)) {
@@ -38,5 +53,14 @@ class ReservationService implements IReservationService
     public function cancel(int $reservationId, int $userId): bool
     {
         return $this->reservations->cancel($reservationId, $userId);
+    }
+
+    public function markAsReady(int $reservationId): bool
+    {
+        if ($reservationId <= 0) {
+            return false;
+        }
+
+        return $this->reservations->markAsReady($reservationId);
     }
 }

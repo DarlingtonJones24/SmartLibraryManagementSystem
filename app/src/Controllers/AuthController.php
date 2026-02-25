@@ -47,7 +47,7 @@ class AuthController extends Controller
 
         $this->flash('Welcome back!', 'success');
 
-        // Send librarians to admin dashboard, members to member dashboard
+        // Send librarians to admin dashboard, members to dashboard
         if (($user['role'] ?? '') === 'librarian') {
             $this->redirect('admin/dashboard');
             return;
@@ -60,7 +60,7 @@ class AuthController extends Controller
     {
         Auth::logout();
         $this->flash('You have been logged out.', 'success');
-        // Redirect to login after logout (home route not defined)
+        // Go to login after logout
         $this->redirect('login');
     }
 }

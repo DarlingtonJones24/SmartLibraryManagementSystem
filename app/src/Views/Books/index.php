@@ -27,6 +27,8 @@ $suppressCatalogContainer = $suppressCatalogContainer ?? false;
       <div class="d-flex justify-content-between align-items-center mb-3">
         <?php
           $currentFilter = trim($filter ?? '');
+          $currentSort = strtolower(trim($sort ?? ($_GET['sort'] ?? 'title')));
+          $currentDirection = strtolower(trim($direction ?? ($_GET['direction'] ?? 'asc')));
           $isLoggedIn = \App\Framework\Auth::check();
           $qs = $_GET;
         ?>
@@ -56,17 +58,23 @@ $suppressCatalogContainer = $suppressCatalogContainer ?? false;
         </div>
 
         <div class="d-flex gap-2 align-items-center">
-          <div class="d-flex gap-2">
-            <select name="sort" class="form-select form-select-sm">
-              <option value="title">Title</option>
-              <option value="author">Author</option>
-              <option value="published">Published</option>
+          <form method="get" action="" class="d-flex gap-2 align-items-center">
+            <?php if (($q ?? '') !== ''): ?>
+              <input type="hidden" name="q" value="<?= htmlspecialchars((string)$q) ?>">
+            <?php endif; ?>
+            <?php if ($currentFilter !== ''): ?>
+              <input type="hidden" name="filter" value="<?= htmlspecialchars($currentFilter) ?>">
+            <?php endif; ?>
+            <select name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="title" <?= $currentSort === 'title' ? 'selected' : '' ?>>Title</option>
+              <option value="author" <?= $currentSort === 'author' ? 'selected' : '' ?>>Author</option>
+              <option value="published" <?= $currentSort === 'published' ? 'selected' : '' ?>>Published</option>
             </select>
-            <select name="direction" class="form-select form-select-sm">
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
+            <select name="direction" class="form-select form-select-sm" onchange="this.form.submit()">
+              <option value="asc" <?= $currentDirection === 'asc' ? 'selected' : '' ?>>Ascending</option>
+              <option value="desc" <?= $currentDirection === 'desc' ? 'selected' : '' ?>>Descending</option>
             </select>
-          </div>
+          </form>
           <div class="btn-group" role="group" aria-label="View toggle">
             <button type="button" class="btn btn-light btn-sm" title="List view" data-view="list"><i class="bi bi-list"></i></button>
             <button type="button" class="btn btn-light btn-sm" title="Grid view" data-view="grid"><i class="bi bi-grid-3x3-gap"></i></button>

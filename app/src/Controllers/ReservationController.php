@@ -10,8 +10,6 @@ class ReservationController extends Controller
 {
     public function reserve(): void
     {
-        try { error_log('[ReservationController::reserve] REQUEST method=' . ($_SERVER['REQUEST_METHOD'] ?? '') . ' uri=' . ($_SERVER['REQUEST_URI'] ?? '') . ' route=' . ($_GET['route'] ?? '') . ' POST=' . json_encode($_POST)); } catch (\Throwable $_) {}
-
         Auth::requireLogin();
 
         $user = Auth::user();
@@ -25,11 +23,8 @@ class ReservationController extends Controller
 
         $service = new ReservationService();
         try {
-            error_log('[reserve] incoming: user_id=' . ($user['id'] ?? 'none') . ' book_id=' . $bookId);
             $ok = $service->reserve((int)$user['id'], $bookId);
-            error_log('[reserve] service->reserve returned: ' . ($ok ? 'true' : 'false'));
         } catch (\Throwable $ex) {
-            error_log('[reserve] exception: ' . $ex->getMessage());
             $ok = false;
         }
 
@@ -40,7 +35,7 @@ class ReservationController extends Controller
         }
 
         $this->flash('Reservation placed!', 'success');
-        // Support AJAX: return JSON when requested
+        // Return JSON for AJAX requests
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             header('Content-Type: application/json');
             echo json_encode(['success' => $ok, 'message' => 'Reservation placed!']);

@@ -18,16 +18,18 @@ class DashboardController extends Controller
 
         $search = trim($_GET['q'] ?? '');
         $filter = trim($_GET['filter'] ?? '');
+        $sort = trim($_GET['sort'] ?? 'title');
+        $direction = trim($_GET['direction'] ?? 'asc');
 
         $loanService = new LoanService();
         $reservationService = new ReservationService();
 
         try {
             $bookService = new BookService();
-            $books = $bookService->getBooks($search, $filter);
+            $books = $bookService->getBooks($search, $filter, $sort, $direction);
         } catch (\Throwable $ex) {
             $books = [];
-            // keep friendly message via flash
+            // Show a friendly message if catalog load fails
             $this->flash('Unable to load catalog. Please ensure the database is running. (' . $ex->getMessage() . ')', 'danger');
         }
 
@@ -37,7 +39,9 @@ class DashboardController extends Controller
             'reservations' => $reservationService->getMyReservations((int)$user['id']),
             'books' => $books,
             'q' => $search,
-            'filter' => $filter
+            'filter' => $filter,
+            'sort' => $sort,
+            'direction' => $direction,
         ]);
     }
 }

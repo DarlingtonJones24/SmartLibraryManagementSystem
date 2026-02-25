@@ -2,7 +2,7 @@
 use App\Framework\Auth;
 \App\Framework\TempData::start();
 $user = Auth::user();
-// Ensure we display the user's full name when available. If session lacks name, try loading from DB and persist.
+// If the name is missing in session, I load it from DB once.
 if (!empty($user['id']) && empty($user['name'])) {
 	try {
 		$repo = new \App\Repository\UserRepository();
@@ -12,11 +12,11 @@ if (!empty($user['id']) && empty($user['name'])) {
 			\App\Framework\Auth::login($user);
 		}
 	} catch (\Throwable $ex) {
-		// ignore lookup errors in the view
+		// I ignore lookup errors here.
 	}
 }
 
-// Prepare display name: prefer full name, fallback to local-part of email
+// Display name: use full name first, then email local-part.
 $displayName = $user['name'] ?? null;
 if (empty($displayName) && !empty($user['email'])) {
 	$displayName = strtok($user['email'], '@');
@@ -36,19 +36,18 @@ if (empty($displayName) && !empty($user['email'])) {
 </div>
 
 <?php
-// When embedding the catalog we suppress its own header and outer container
+// For embedded catalog, hide its own header and container.
 $suppressCatalogHeader = true;
 $suppressCatalogContainer = true;
 
-// Embed the catalog below the welcome card. The controller provides `books`, `q`, and `filter`.
-// Include the Books index view so the dashboard shows the same catalog UI.
+// Render the catalog below the welcome card.
 try {
 	$catalogPath = __DIR__ . '/../Books/index.php';
 	if (file_exists($catalogPath)) {
 		include $catalogPath;
 	}
 } catch (\Throwable $ex) {
-	// If include fails, show a simple link to the catalog
+	// If include fails, show a fallback link.
 	echo '<div class="container py-4"><div class="alert alert-warning">Could not load catalog. <a href="/catalog">Open Catalog</a></div></div>';
 }
 

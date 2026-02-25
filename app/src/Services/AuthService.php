@@ -22,17 +22,17 @@ class AuthService implements IAuthService
             return null;
         }
 
-        // Blocked user check
+        // Stop login if user is blocked
         if (!empty($user['is_blocked']) && (int)$user['is_blocked'] === 1) {
             return null;
         }
 
-        // Password check (DB uses password_hash)
+        // Verify password hash
         if (!password_verify($password, $user['password_hash'])) {
             return null;
         }
 
-        // Return safe user data to store in session (no password)
+        // Return only safe fields for session
         return [
             'id' => (int)$user['id'],
             'name' => $user['name'] ?? ($user['Name'] ?? null),

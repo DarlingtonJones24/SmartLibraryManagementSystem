@@ -1,70 +1,152 @@
-# Docker template for PHP projects
-This repository provides a starting template for PHP application development.
+# Smart Library: A Web Application for Book Lending and Reservation
 
-It contains:
-* NGINX webserver
-* PHP FastCGI Process Manager with PDO MySQL support
-* MariaDB (GPL MySQL fork)
-* PHPMyAdmin
-* Composer
-* Composer package [nikic/fast-route](https://github.com/nikic/FastRoute) for routing
+## Student Information
+- **Name:** Darlington Jones (711336)
+- **Course:** Web Development 1
+- **Institution:** Inholland University of Applied Sciences
+- **Project Type:** Individual Web Application Assignment
 
-## Setup
+---
 
-1. Install Docker Desktop on Windows or Mac, or Docker Engine on Linux.
-1. Clone the project
+## What this project is about
+Smart Library is my attempt to solve a very practical problem: many small school and community libraries still use paper notes, Excel sheets, or very basic systems to manage books and loans. That usually leads to confusion, lost records, and extra manual work.
 
-## Usage
+This project turns that process into a clean web application where:
+- members can browse, borrow, and reserve books,
+- librarians can manage inventory and monitor loan activity,
+- and both sides get a clearer overview of what is available, what is overdue, and what needs attention.
 
-In a terminal, from the cloned project folder, run:
-```bash
-docker compose up
-```
+The goal is not just to build “another CRUD app,” but to build something that feels close to a real-world library workflow.
 
-### Composer Autoload
+---
 
-This template is configured to use Composer for PSR-4 autoloading:
+## Purpose of the application
+The core purpose of Smart Library is to make library operations easier, faster, and more reliable.
 
-- Namespace `App\\` is mapped to `app/src/`.
+Instead of manually tracking everything, the app provides:
+- a centralized catalog,
+- clear loan and reservation tracking,
+- role-based dashboards,
+- and secure user authentication.
 
-To install dependencies and generate the autoloader, run:
+For members, it creates a simple self-service experience.
+For librarians, it reduces admin pressure and improves control over daily operations.
 
-```bash
-docker compose run --rm php composer install
-```
+---
 
-If you add new classes or change namespaces, regenerate the autoloader:
+## Users and roles
+Smart Library supports multiple user roles with different permissions.
 
-```bash
-docker compose run --rm php composer dump-autoload
-```
+### 1: Guest
+- Can browse the catalog
+- Cannot borrow or reserve books
 
-Example usage is wired in `app/public/index.php` and a sample class exists at `app/src/hello.php`.
+### 2: Member (standard user)
+- Can register and log in
+- Can browse books and check availability
+- Can borrow books that are available
+- Can reserve books that are currently unavailable
+- Can view personal dashboard data:
+	- active loans
+	- due dates
+	- current reservations
+	- overdue indicators
 
-### NGINX
+### 3: Librarian (admin)
+- Can log in to the admin area
+- Can add, edit, and remove books
+- Can manage active loans
+- Can process reservations
+- Can mark books as returned
+- Can monitor key dashboard statistics
 
-NGINX will now serve files in the app/public folder.
+---
 
-Go to [http://localhost/hello.php](http://localhost/hello.php). You should see a hello world message.
+## Main features
 
-### PHPMyAdmin
+### Member features
+- Catalog browsing with search and filtering
+- Real-time availability display
+- Borrow and reservation actions
+- Personalized dashboard for loan/reservation status
+- Overdue awareness through status indicators
 
-PHPMyAdmin provides basic database administration. It is accessible at [localhost:8080](localhost:8080).
+### Librarian features
+- Full book management (create, update, delete)
+- Loan management workflows
+- Reservation management workflows
+- Dashboard insights for:
+	- total books
+	- total copies
+	- available copies
+	- active loans
+	- overdue loans
+	- pending/waiting reservations
 
-Credentials are defined in `docker-compose.yml`. They are: developer/secret123
+---
 
+## Technical approach
 
-### Stopping the docker container
+### Architecture
+This project follows a layered MVC-based structure used in Web Development 1:
 
-If you want to stop the containers, press Ctrl+C. 
+- **Models** represent domain entities (`Book`, `User`, `Loan`, `Reservation`)
+- **Controllers** handle requests and view rendering
+- **Services** contain business logic (borrowing, reservation state, workflows)
+- **Repositories** contain SQL/data access
 
-Or run:
-```bash
-docker compose down
-```
+This separation keeps the code easier to test, maintain, and extend.
 
+### Security and authentication
+- Session-based login/logout
+- Password hashing
+- Prepared statements to reduce SQL injection risk
+- Input validation
+- Role-based access checks
 
+### Front-end and usability
+- Bootstrap-based UI styling
+- Responsive layouts for desktop/tablet/mobile
+- JavaScript enhancements for interaction and dynamic UI behavior
+- Accessibility-focused markup patterns (labels, alt text, readable structure)
 
-To do
+### Compliance goals
+- **GDPR-minded design:** minimal personal data exposure
+- **WCAG-aware approach:** clear labels, contrast-conscious UI, keyboard-friendly structure
 
-Only the admin can return book
+---
+
+## Complexity goals covered
+To meet assignment complexity expectations, this app includes more than basic CRUD:
+
+- Borrowing flow with due dates and overdue logic
+- Reservation flow with waiting/ready states
+- Role-specific dashboards and permissions
+- Service + Repository layering with cleaner separation of concerns
+- Practical security handling for authentication and data access
+
+---
+
+## Expected outcome
+Smart Library is intended to provide:
+- a realistic prototype for replacing manual library administration,
+- a smoother borrowing/reservation experience for users,
+- and a cleaner operational workflow for librarians.
+
+It reflects real-world needs while aligning with technical, security, and accessibility expectations from the Web Development 1 course.
+
+---
+
+### Demo/Test accounts
+Use these credentials to test both roles:
+
+### Member account
+- **Email:** darlingtonjones15@gmail.com
+- **Password:** Darlington@12
+
+### Admin account
+- **Email:** danielbreczinski30@gmail.com
+- **Password:** password123
+
+ Note: The login details are for testing--
+

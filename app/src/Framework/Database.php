@@ -18,7 +18,7 @@ final class Database
 
         $c = require $file;
 
-        // Default safe options (and allow config to override them)
+        // Use safe defaults, but let config override them
         $opts = $c['opts'] ?? [];
         $opts = $opts + [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,

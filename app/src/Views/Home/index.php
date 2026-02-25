@@ -1,6 +1,7 @@
 <?php
-/** Home page view
- * Variables available: $title, $stats
+/**
+ * Home page.
+ * Uses: $title, $stats.
  */
 ?>
 

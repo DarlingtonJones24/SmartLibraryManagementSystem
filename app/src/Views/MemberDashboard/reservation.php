@@ -29,7 +29,7 @@ $user = Auth::user();
 					$coverPath = preg_match('#(^/|assets/Uploads/)#i', $cover) ? '/' . ltrim($cover, '/') : '/assets/Uploads/covers/' . rawurlencode($cover);
 				}
 
-				// status label mapping
+				// Map DB status to label and badge class
 				$rawStatus = strtolower(trim($r['Status'] ?? ''));
 				$statusLabel = $rawStatus === 'waiting' ? 'pending' : ($rawStatus === 'ready' ? 'ready' : $rawStatus);
 				$statusClass = $rawStatus === 'waiting' ? 'badge-warning' : ($rawStatus === 'ready' ? 'badge-success' : 'badge-secondary');

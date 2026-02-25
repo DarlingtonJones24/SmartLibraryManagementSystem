@@ -68,7 +68,7 @@ class LoanController extends Controller
             return;
         }
 
-        // Non-AJAX fallback: redirect back to the referring page when possible
+        // For normal requests, go back to previous page when possible
         $referer = $_SERVER['HTTP_REFERER'] ?? null;
 
         if (!$ok) {

@@ -1,37 +1,39 @@
-<div class="row g-3">
-  <div class="col-md-6">
-    <label class="form-label">Title</label>
-    <input class="form-control" name="Title" required value="<?= htmlspecialchars($book['Title'] ?? '') ?>">
-  </div>
+<div class="mb-3">
+  <label class="form-label">Title</label>
+  <input type="text" name="Title" class="form-control" value="<?= htmlspecialchars($book['Title'] ?? '') ?>" required>
+</div>
 
-  <div class="col-md-6">
-    <label class="form-label">Author</label>
-    <input class="form-control" name="author" required value="<?= htmlspecialchars($book['author'] ?? '') ?>">
-  </div>
+<div class="mb-3">
+  <label class="form-label">Author</label>
+  <input type="text" name="author" class="form-control" value="<?= htmlspecialchars($book['author'] ?? '') ?>">
+</div>
 
-  <div class="col-md-4">
+<div class="row">
+  <div class="col-md-4 mb-3">
     <label class="form-label">ISBN</label>
-    <input class="form-control" name="ISBN" value="<?= htmlspecialchars($book['ISBN'] ?? '') ?>">
+    <input type="text" name="ISBN" class="form-control" value="<?= htmlspecialchars($book['ISBN'] ?? '') ?>">
   </div>
-
-  <div class="col-md-4">
+  <div class="col-md-4 mb-3">
     <label class="form-label">Genre</label>
-    <input class="form-control" name="Genre" value="<?= htmlspecialchars($book['Genre'] ?? '') ?>">
+    <input type="text" name="Genre" class="form-control" value="<?= htmlspecialchars($book['Genre'] ?? '') ?>">
   </div>
-
-  <div class="col-md-4">
+  <div class="col-md-4 mb-3">
     <label class="form-label">Published Year</label>
-    <input class="form-control" name="published_year" value="<?= htmlspecialchars((string)($book['published_year'] ?? '')) ?>">
+    <input type="number" name="published_year" class="form-control" value="<?= htmlspecialchars($book['published_year'] ?? '') ?>">
   </div>
+</div>
 
-  <div class="col-12">
-    <label class="form-label">Cover URL</label>
-    <input class="form-control" name="cover_url" placeholder="Filename or path (e.g. cover_01_xxx.webp or /assets/Uploads/covers/cover_01.webp)" value="<?= htmlspecialchars($book['cover_url'] ?? '') ?>">
-    <div class="form-text">If empty, a default cover will be used.</div>
-  </div>
+<div class="mb-3">
+  <label class="form-label">Cover URL / filename</label>
+  <input type="text" name="cover_url" class="form-control" value="<?= htmlspecialchars($book['cover_url'] ?? '') ?>" placeholder="e.g. covers/my-cover.jpg">
+</div>
 
-  <div class="col-12">
-    <label class="form-label">Description</label>
-    <textarea class="form-control" name="Description" rows="4"><?= htmlspecialchars($book['Description'] ?? '') ?></textarea>
-  </div>
+<div class="mb-3">
+  <label class="form-label">Total Copies</label>
+  <input type="number" name="total_copies" class="form-control" min="1" value="<?= htmlspecialchars($book['total_copies'] ?? 1) ?>">
+</div>
+
+<div class="mb-3">
+  <label class="form-label">Description</label>
+  <textarea name="Description" class="form-control" rows="4"><?= htmlspecialchars($book['Description'] ?? '') ?></textarea>
 </div>

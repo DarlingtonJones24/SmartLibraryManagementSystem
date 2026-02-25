@@ -31,14 +31,14 @@ class LoanService implements ILoanService
 
     public function borrow(int $userId, int $bookId): bool
     {
-        // Find an available copy of this book
+        // Find an available copy
         $copyId = $this->copies->findAvailableCopyId($bookId);
 
         if ($copyId === null) {
-            return false; // no copies available
+            return false; // no copy available
         }
 
-        // Simple rule: 14 days loan
+        // Default loan period: 14 days
         $dueAt = date('Y-m-d H:i:s', strtotime('+14 days'));
 
         $newLoanId = $this->loans->create($userId, $copyId, $dueAt);

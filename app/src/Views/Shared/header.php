@@ -10,6 +10,13 @@
   <link rel="stylesheet" href="/css/site.css">
   <link rel="stylesheet" href="/css/auth.css">
   <link rel="stylesheet" href="/css/catalog.css">
+  <?php
+  // Load admin.css only on admin pages
+  $isAdminPath = (strpos($_SERVER['REQUEST_URI'] ?? '', '/admin') === 0) || (isset($_GET['route']) && str_starts_with($_GET['route'], 'admin/'));
+  if ($isAdminPath):
+  ?>
+    <link rel="stylesheet" href="/css/admin.css">
+  <?php endif; ?>
 </head>
 <body>
 
