@@ -71,7 +71,7 @@ if ($isAdminPage) {
       </nav>
     <?php endif; ?>
 
-    <div class="sidebar-footer px-3 mt-auto text-white-50">&copy; 2024 Smart Library</div>
+    <div class="sidebar-footer px-3 mt-auto text-white-50">&copy; <?= date('Y') ?> Smart Library</div>
   </aside>
   <?php endif; ?>
 
