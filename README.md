@@ -3,21 +3,16 @@
 ## Student
 - Name: Darlington Jones
 - Student number: 711336
-- Course: Web Development 1
 
 ## What it is
 I built Smart Library as a library management web application. Members can browse books, borrow books, reserve unavailable books, and track their own loans. Admin users can manage books, loans, and reservations.
 
-## Run the project
+## To run the project
 1. Run `docker-compose up`
 2. Open `http://localhost`
-3. Optional: open phpMyAdmin at `http://localhost:8080`
+3. to view my database, you can search `http://localhost:8080`
 
-The SQL export in the project root is mounted into the MariaDB container and is imported automatically on first startup.
-
-If you already have an old Docker database volume on your machine, run `docker-compose down -v` once and then run `docker-compose up` again.
-
-## Login accounts
+## The login Accounts
 ### Member
 - Email: darlingtonjones15@gmail.com
 - Password: Darlington@12
@@ -34,7 +29,7 @@ If you already have an old Docker database volume on your machine, run `docker-c
 - Views: `app/src/Views`
 - Database export: `SmartLibraryManagementSystem.sql`
 
-## What to pay attention to
+## What i paid attention to
 - MVC is used throughout the project with controllers, services, repositories, and views separated.
 - Repositories contain the PDO database queries.
 - Services contain the business rules for borrowing, returning, and reservations.
@@ -47,7 +42,7 @@ If you already have an old Docker database volume on your machine, run `docker-c
 - Sessions are used for login.
 - Role checks are used for member and admin actions.
 
-## GDPR(General Data Protection Regulation) and WCAG
+## Data protection and WCAG
 - Only basic user data needed for the system is stored.
 - Users only see their own loans and reservations.
 - Forms use labels and the pages use clear headings and readable structure.
