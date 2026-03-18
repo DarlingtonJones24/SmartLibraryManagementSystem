@@ -45,7 +45,6 @@ function enableAjaxForms() {
   }
 }
 
-// Basic AJAX POST so loans and reservations can be updated without refreshing.
 function sendAjaxForm(form) {
   var apiUrl = getApiUrl(form);
   var data = getFormDataAsJson(form);
