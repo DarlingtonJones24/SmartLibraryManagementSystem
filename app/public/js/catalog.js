@@ -1,9 +1,10 @@
 (function () {
+  var form = document.querySelector('[data-js="catalog-search-form"]');
   var input = document.querySelector('[data-js="catalog-search-input"]');
   var results = document.querySelector('[data-js="catalog-live-results"]');
   var timerId = 0;
 
-  if (!input || !results) {
+  if (!form || !input || !results) {
     return;
   }
 
@@ -22,7 +23,6 @@
   });
 })();
 
-// Basic AJAX search using fetch, following the lecture pattern.
 function loadBooks(query, results) {
   fetch('/api/books?q=' + encodeURIComponent(query), {
     headers: {

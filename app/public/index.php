@@ -31,44 +31,6 @@ $dispatcher = simpleDispatcher(function (RouteCollector $routes) {
 
     $routes->addRoute('GET', '/index.php', function (): void { (new HomeController())->showHome(); });
 
-    $routes->addRoute('POST', '/index.php', function (): void {
-        $route = trim((string) ($_REQUEST['route'] ?? ''));
-
-        switch ($route) {
-            case 'reserve':
-                (new ReservationController())->createReservation();
-                break;
-            case 'reserve/cancel':
-                (new ReservationController())->cancelReservation();
-                break;
-            case 'loan/borrow':
-                (new LoanController())->borrowBook();
-                break;
-            case 'loan/return':
-                (new LoanController())->returnBook();
-                break;
-            case 'admin/loan/return':
-                (new AdminController())->markLoanReturned();
-                break;
-            case 'admin/books/create':
-                (new AdminController())->createBook();
-                break;
-            case 'admin/books/edit':
-                (new AdminController())->updateBook();
-                break;
-            case 'admin/books/delete':
-                (new AdminController())->deleteBook();
-                break;
-            case 'admin/reservation/process':
-                (new AdminController())->markReservationReady();
-                break;
-            default:
-                http_response_code(404);
-                echo '404 - Page Not Found';
-                break;
-        }
-    });
-
     $routes->addRoute('GET', '/catalog', function (): void { (new BookController())->showCatalog(); });
     $routes->addRoute('GET', '/books', function (): void { (new BookController())->showCatalog(); });
     $routes->addRoute('GET', '/books/{id:\d+}', function (array $vars): void {
@@ -87,6 +49,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $routes) {
     $routes->addRoute('POST', '/register', function (): void { (new AuthController())->register(); });
     $routes->addRoute('GET', '/logout', function (): void { (new AuthController())->logout(); });
 
+    $routes->addRoute('POST', '/admin/books/create', function (): void { (new AdminController())->createBook(); });
+    $routes->addRoute('POST', '/admin/books/edit', function (): void { (new AdminController())->updateBook(); });
+    $routes->addRoute('POST', '/admin/books/delete', function (): void { (new AdminController())->deleteBook(); });
     $routes->addRoute('POST', '/loan/borrow', function (): void { (new LoanController())->borrowBook(); });
     $routes->addRoute('POST', '/loan/return', function (): void { (new LoanController())->returnBook(); });
     $routes->addRoute('POST', '/admin/loan/return', function (): void { (new AdminController())->markLoanReturned(); });
@@ -121,32 +86,6 @@ $dispatcher = simpleDispatcher(function (RouteCollector $routes) {
 
 $httpMethod = $_SERVER['REQUEST_METHOD'];
 $uri = strtok($_SERVER['REQUEST_URI'], '?');
-
-if (isset($_GET['route'])) {
-    $legacy = trim((string) $_GET['route'], '/');
-
-    if ($legacy === 'home') {
-        $uri = '/';
-    } elseif ($legacy === 'catalog') {
-        $uri = '/catalog';
-    } elseif ($legacy === 'login') {
-        $uri = '/login';
-    } elseif ($legacy === 'register') {
-        $uri = '/register';
-    } elseif ($legacy === 'dashboard') {
-        $uri = '/dashboard';
-    } elseif ($legacy === 'admin/dashboard') {
-        $uri = '/admin/dashboard';
-    } elseif ($legacy === 'admin/books') {
-        $uri = '/admin/books';
-    } elseif ($legacy === 'book/detail' && isset($_GET['id'])) {
-        $uri = '/books/' . (int) $_GET['id'];
-    } elseif ($legacy === 'book/detail' && isset($_GET['book_id'])) {
-        $uri = '/books/' . (int) $_GET['book_id'];
-    } else {
-        $uri = '/' . $legacy;
-    }
-}
 
 $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
 

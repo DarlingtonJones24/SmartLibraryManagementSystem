@@ -1,11 +1,10 @@
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0"><?= htmlspecialchars($adminBooksViewModel->title) ?></h3>
-    <a class="btn btn-primary" href="/index.php?route=admin/books/create">+ Add New Book</a>
+    <a class="btn btn-primary" href="/admin/books/create">+ Add New Book</a>
   </div>
 
-  <form class="d-flex gap-2 mb-3" method="get" action="/index.php">
-    <input type="hidden" name="route" value="admin/books">
+  <form class="d-flex gap-2 mb-3" method="get" action="/admin/books">
     <input class="form-control" name="q" value="<?= htmlspecialchars($adminBooksViewModel->searchQuery) ?>" placeholder="Search title/author">
     <button class="btn btn-outline-primary">Search</button>
   </form>
@@ -46,9 +45,9 @@
               </div>
 
               <div class="list-actions-mobile d-flex d-md-none gap-2 mt-3 flex-wrap">
-                <a class="btn btn-sm btn-warning" href="/index.php?route=admin/books/edit&id=<?= $book['id'] ?>">Edit</a>
+                <a class="btn btn-sm btn-warning" href="/admin/books/edit?id=<?= $book['id'] ?>">Edit</a>
                 <a class="btn btn-sm btn-outline-primary" href="/books/<?= $book['id'] ?>">View</a>
-                <form method="post" action="/index.php?route=admin/books/delete" class="d-inline" onsubmit="return confirm('Delete this book?');">
+                <form method="post" action="/admin/books/delete" class="d-inline" onsubmit="return confirm('Delete this book?');">
                   <input type="hidden" name="id" value="<?= $book['id'] ?>">
                   <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </form>
@@ -56,9 +55,9 @@
             </div>
 
             <div class="list-actions d-none d-md-flex ms-auto flex-nowrap gap-2 align-items-center">
-              <a class="btn btn-sm btn-warning" href="/index.php?route=admin/books/edit&id=<?= $book['id'] ?>">Edit</a>
+              <a class="btn btn-sm btn-warning" href="/admin/books/edit?id=<?= $book['id'] ?>">Edit</a>
               <a class="btn btn-sm btn-outline-primary" href="/books/<?= $book['id'] ?>">View</a>
-              <form method="post" action="/index.php?route=admin/books/delete" class="d-inline mb-0" onsubmit="return confirm('Delete this book?');">
+              <form method="post" action="/admin/books/delete" class="d-inline mb-0" onsubmit="return confirm('Delete this book?');">
                 <input type="hidden" name="id" value="<?= $book['id'] ?>">
                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
               </form>

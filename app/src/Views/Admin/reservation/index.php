@@ -23,7 +23,7 @@
                 <span class="badge <?= htmlspecialchars($reservation['statusClass']) ?>"><?= htmlspecialchars($reservation['statusLabel']) ?></span>
                 <a class="btn btn-sm btn-secondary me-2" href="/books/<?= $reservation['bookId'] ?>">View</a>
                 <?php if ($reservation['canProcess']): ?>
-                  <form method="post" action="/index.php?route=admin/reservation/process" class="m-0">
+                  <form method="post" action="/admin/reservation/process" class="m-0">
                     <input type="hidden" name="reservation_id" value="<?= $reservation['id'] ?>">
                     <button type="submit" class="btn btn-sm btn-outline-success">Process</button>
                   </form>
