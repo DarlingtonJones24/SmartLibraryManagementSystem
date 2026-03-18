@@ -6,8 +6,8 @@
         <h2 class="auth-title">Create account</h2>
         <p class="auth-sub">Register a new account to access the library.</p>
 
-        <?php if (!empty($flash)): ?>
-          <div class="alert alert-<?= htmlspecialchars($flash['type'] ?? 'info') ?>"><?= htmlspecialchars($flash['message'] ?? '') ?></div>
+        <?php if (!empty($message)): ?>
+            <div class="alert alert-<?= htmlspecialchars($message['type'] ?? 'info') ?>"><?= htmlspecialchars($message['text'] ?? '') ?></div>
         <?php endif; ?>
 
         <form method="post" action="/register">

@@ -4,44 +4,61 @@ namespace App\Controllers;
 
 use App\Framework\Auth;
 use App\Framework\Controller;
-use App\Services\LoanService;
-use App\Services\ReservationService;
 use App\Services\BookService;
+use App\Services\IBookService;
+use App\Services\UserService;
+use App\ViewModels\CatalogViewModel;
+use App\ViewModels\MemberDashboardViewModel;
 
 class DashboardController extends Controller
 {
-    public function index(): void
+    private IBookService $bookService;
+    private UserService $userService;
+
+    public function __construct(?IBookService $bookService = null, ?UserService $userService = null)
+    {
+        parent::__construct();
+        $this->bookService = $bookService ?? new BookService();
+        $this->userService = $userService ?? new UserService();
+    }
+
+    public function showDashboard(): void
     {
         Auth::requireLogin();
 
-        $user = Auth::user();
-
+        $user = $this->userService->normalizeSessionUser(Auth::user());
         $search = trim($_GET['q'] ?? '');
         $filter = trim($_GET['filter'] ?? '');
         $sort = trim($_GET['sort'] ?? 'title');
         $direction = trim($_GET['direction'] ?? 'asc');
-
-        $loanService = new LoanService();
-        $reservationService = new ReservationService();
+        $page = max(1, (int) ($_GET['p'] ?? 1));
 
         try {
-            $bookService = new BookService();
-            $books = $bookService->getBooks($search, $filter, $sort, $direction);
-        } catch (\Throwable $ex) {
+            $books = $this->bookService->getCatalogBooks($search, $filter, $sort, $direction, (int) $user['id']);
+        } catch (\Throwable $exception) {
             $books = [];
-            // Show a friendly message if catalog load fails
-            $this->flash('Unable to load catalog. Please ensure the database is running. (' . $ex->getMessage() . ')', 'danger');
+            $this->setMessage('Unable to load catalog. Please ensure the database is running. (' . $exception->getMessage() . ')', 'danger');
         }
 
+        $catalogViewModel = CatalogViewModel::fromBooks(
+            'Catalog',
+            $search,
+            $filter,
+            $sort,
+            $direction,
+            true,
+            $books,
+            $page
+        );
+        $memberDashboardViewModel = new MemberDashboardViewModel(
+            'Dashboard',
+            $user['name'] !== '' ? $user['name'] : $user['email'],
+            $catalogViewModel
+        );
+
         $this->render('MemberDashboard/dashboard', [
-            'title' => 'Dashboard',
-            'loans' => $loanService->getMyLoans((int)$user['id']),
-            'reservations' => $reservationService->getMyReservations((int)$user['id']),
-            'books' => $books,
-            'q' => $search,
-            'filter' => $filter,
-            'sort' => $sort,
-            'direction' => $direction,
+            'title' => $memberDashboardViewModel->title,
+            'memberDashboardViewModel' => $memberDashboardViewModel,
         ]);
     }
 }

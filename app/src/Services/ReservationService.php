@@ -15,33 +15,33 @@ class ReservationService implements IReservationService
         $this->reservations = $reservations ?? new ReservationRepository();
     }
 
-    public function getMyReservations(int $userId): array
+    public function getActiveReservationsForUser(int $userId): array
     {
-        return $this->reservations->getByUser($userId);
+        return $this->reservations->findActiveReservationsByUser($userId);
     }
 
-    public function getRecentForAdminDashboard(): array
+    public function getRecentPendingReservations(int $limit = 3): array
     {
-        return $this->reservations->getRecentWaitingWithBooks(3);
+        return $this->reservations->findRecentPendingReservationsWithBooks($limit);
     }
 
-    public function getWaitingCount(): int
+    public function countPendingReservations(): int
     {
-        return $this->reservations->countWaiting();
+        return $this->reservations->countPendingReservations();
     }
 
-    public function getAllActiveReservations(): array
+    public function getActiveReservationsForAdmin(): array
     {
-        return $this->reservations->getAllActiveWithDetails();
+        return $this->reservations->findAllActiveReservationsWithDetails();
     }
 
-    public function reserve(int $userId, int $bookId): bool
+    public function createReservation(int $userId, int $bookId): bool
     {
-        if ($this->reservations->hasActiveReservation($userId, $bookId)) {
+        if ($this->reservations->hasOpenReservation($userId, $bookId)) {
             return false;
         }
 
-        $newId = $this->reservations->create(
+        $newId = $this->reservations->createReservation(
             $bookId,
             $userId,
             ReservationStatus::PENDING->value
@@ -50,17 +50,17 @@ class ReservationService implements IReservationService
         return $newId > 0;
     }
 
-    public function cancel(int $reservationId, int $userId): bool
+    public function cancelReservation(int $reservationId, int $userId): bool
     {
-        return $this->reservations->cancel($reservationId, $userId);
+        return $this->reservations->cancelReservation($reservationId, $userId);
     }
 
-    public function markAsReady(int $reservationId): bool
+    public function markReservationReady(int $reservationId): bool
     {
         if ($reservationId <= 0) {
             return false;
         }
 
-        return $this->reservations->markAsReady($reservationId);
+        return $this->reservations->markReservationAsReady($reservationId);
     }
 }

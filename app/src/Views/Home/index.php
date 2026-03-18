@@ -1,10 +1,3 @@
-<?php
-/**
- * Home page.
- * Uses: $title, $stats.
- */
-?>
-
 <div class="container py-5">
   <div class="row align-items-center mb-4">
     <div class="col-md-8">
@@ -20,11 +13,11 @@
   </div>
 
   <div class="row mb-4">
-    <?php foreach ($stats ?? [] as $s): ?>
+    <?php foreach ($homeViewModel->stats as $stat): ?>
       <div class="col-6 col-md-3 mb-2">
         <div class="card p-3 text-center">
-          <div class="h4 mb-0"><?= htmlspecialchars($s[0]) ?></div>
-          <div class="text-muted small"><?= htmlspecialchars($s[1]) ?></div>
+          <div class="h4 mb-0"><?= htmlspecialchars($stat['value']) ?></div>
+          <div class="text-muted small"><?= htmlspecialchars($stat['label']) ?></div>
         </div>
       </div>
     <?php endforeach; ?>
@@ -32,8 +25,9 @@
 
   <h2 class="h4 mb-3">Featured Books</h2>
   <?php
+  $catalogViewModel = $homeViewModel->catalog;
   $suppressCatalogHeader = true;
   $suppressCatalogContainer = true;
-  require __DIR__ . '/../Books/index.php';
+  include __DIR__ . '/../Books/index.php';
   ?>
 </div>

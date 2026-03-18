@@ -2,7 +2,7 @@
 
 namespace App\ViewModels;
 
-class AdminReservationsViewModel
+class MemberReservationsViewModel
 {
     public string $title;
     public array $reservations;
@@ -37,10 +37,9 @@ class AdminReservationsViewModel
             'coverPath' => self::coverPath((string) ($reservation['cover_url'] ?? $reservation['cover'] ?? '')),
             'createdAt' => self::formatDate($reservation['created_at'] ?? ''),
             'expiresAt' => self::formatDate($reservation['expires_at'] ?? ''),
-            'userName' => trim((string) ($reservation['user_name'] ?? $reservation['userName'] ?? $reservation['user_id'] ?? '')),
             'statusLabel' => $statusInfo['label'],
             'statusClass' => $statusInfo['badgeClass'],
-            'canProcess' => strtolower($status) === 'waiting' && $statusInfo['label'] === 'pending',
+            'canPickup' => $statusInfo['label'] === 'ready',
         ];
     }
 

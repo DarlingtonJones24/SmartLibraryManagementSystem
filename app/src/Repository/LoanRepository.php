@@ -6,7 +6,7 @@ use App\Framework\BaseRepository;
 
 class LoanRepository extends BaseRepository implements ILoanRepository
 {
-    public function getActiveByUser(int $userId): array
+    public function findActiveLoansByUser(int $userId): array
     {
         return $this->fetchAll(
             "SELECT l.*, b.Title, b.author, b.cover_url
@@ -20,7 +20,7 @@ class LoanRepository extends BaseRepository implements ILoanRepository
         );
     }
 
-    public function returnLoan(int $loanId, int $userId): bool
+    public function markLoanAsReturned(int $loanId, int $userId): bool
     {
         return $this->execute(
             "UPDATE loans
@@ -30,7 +30,18 @@ class LoanRepository extends BaseRepository implements ILoanRepository
         );
     }
 
-    public function create(int $userId, int $copyId, string $dueAt): int
+    public function markLoanAsReturnedByLibrarian(int $loanId): bool
+    {
+        return $this->execute(
+            "UPDATE loans
+             SET returned_at = NOW()
+             WHERE id = ?
+               AND returned_at IS NULL",
+            [$loanId]
+        );
+    }
+
+    public function createLoan(int $userId, int $copyId, string $dueAt): int
     {
         $this->execute(
             "INSERT INTO loans (user_id, copy_id, loaned_at, due_at, returned_at, renew_count, fine_amount)
@@ -41,13 +52,13 @@ class LoanRepository extends BaseRepository implements ILoanRepository
         return $this->lastInsertId();
     }
 
-    public function countActiveAll(): int
+    public function countActiveLoans(): int
     {
         $row = $this->fetchOne("SELECT COUNT(*) as cnt FROM loans WHERE returned_at IS NULL");
         return (int)($row['cnt'] ?? 0);
     }
 
-    public function countOverdue(): int
+    public function countOverdueLoans(): int
     {
         $row = $this->fetchOne(
             "SELECT COUNT(*) as cnt
@@ -62,7 +73,7 @@ class LoanRepository extends BaseRepository implements ILoanRepository
     /**
      * Get recent active loans.
      */
-    public function getRecentActive(int $limit = 5): array
+    public function findRecentActiveLoans(int $limit = 5): array
     {
         $sql = "SELECT l.*, b.Title, b.cover_url
                  FROM loans l
@@ -75,22 +86,21 @@ class LoanRepository extends BaseRepository implements ILoanRepository
         return $this->fetchAll($sql);
     }
 
-    /**
-     * Get recent loans, including returned ones.
-     */
-    public function getRecent(int $limit = 5): array
+    public function findLoanDetails(int $loanId): ?array
     {
-        $sql = "SELECT l.*, b.Title, b.cover_url
-                 FROM loans l
-                 LEFT JOIN book_copies bc ON bc.id = l.copy_id
-                 LEFT JOIN books b ON b.id = bc.book_id
-                 ORDER BY l.loaned_at DESC
-                 LIMIT " . (int)$limit;
-
-        return $this->fetchAll($sql);
+        return $this->fetchOne(
+            "SELECT l.*, b.Title, b.author, b.cover_url, b.ISBN, b.Genre, b.published_year, b.Description,
+                    u.name AS user_name, u.Email AS user_email
+             FROM loans l
+             JOIN book_copies bc ON bc.id = l.copy_id
+             JOIN books b ON b.id = bc.book_id
+             JOIN users u ON u.id = l.user_id
+             WHERE l.id = ?",
+            [$loanId]
+        );
     }
 
-    public function getAllActiveWithDetails(): array
+    public function findAllActiveLoansWithDetails(): array
     {
         return $this->fetchAll(
             "SELECT l.*, b.Title, b.author, b.cover_url, b.ISBN, u.name as user_name
@@ -103,4 +113,18 @@ class LoanRepository extends BaseRepository implements ILoanRepository
         );
     }
 
+    public function findOverdueBooksByUser(int $userId): array
+    {
+        return $this->fetchAll(
+            "SELECT b.*, 0 AS available_copies
+             FROM loans l
+             JOIN book_copies bc ON bc.id = l.copy_id
+             JOIN books b ON b.id = bc.book_id
+             WHERE l.user_id = ?
+               AND l.returned_at IS NULL
+               AND l.due_at < NOW()
+             ORDER BY l.due_at ASC",
+            [$userId]
+        );
+    }
 }

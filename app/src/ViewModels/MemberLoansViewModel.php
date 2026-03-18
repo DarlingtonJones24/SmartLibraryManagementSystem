@@ -2,7 +2,7 @@
 
 namespace App\ViewModels;
 
-class AdminLoansViewModel
+class MemberLoansViewModel
 {
     public string $title;
     public array $loans;
@@ -33,7 +33,6 @@ class AdminLoansViewModel
             'coverPath' => self::coverPath((string) ($loan['cover_url'] ?? $loan['cover'] ?? '')),
             'loanedAt' => self::formatDate($loan['loaned_at'] ?? ''),
             'dueAt' => self::formatDate($loan['due_at'] ?? ''),
-            'userName' => trim((string) ($loan['user_name'] ?? $loan['userName'] ?? $loan['user_id'] ?? '')),
             'isOverdue' => self::isPast($loan['due_at'] ?? ''),
         ];
     }

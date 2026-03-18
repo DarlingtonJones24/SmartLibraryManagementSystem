@@ -7,7 +7,7 @@ use App\Framework\BaseRepository;
 
 class ReservationRepository extends BaseRepository implements IReservationRepository
 {
-    public function create(int $bookId, int $userId, string $status): int
+    public function createReservation(int $bookId, int $userId, string $status): int
     {
         $ok = $this->execute(
             "INSERT INTO reservations (book_id, user_id, Status, created_at)
@@ -17,14 +17,14 @@ class ReservationRepository extends BaseRepository implements IReservationReposi
 
         if (!$ok) {
             try {
-                error_log(sprintf('[ReservationRepository::create] INSERT failed for user=%d book=%d status=%s', $userId, $bookId, $status));
+                error_log(sprintf('[ReservationRepository::createReservation] INSERT failed for user=%d book=%d status=%s', $userId, $bookId, $status));
             } catch (\Throwable $_) {}
         }
 
         return $this->lastInsertId();
     }
 
-    public function getByUser(int $userId): array
+    public function findActiveReservationsByUser(int $userId): array
     {
         return $this->fetchAll(
             "SELECT r.*, b.Title, b.author, b.cover_url
@@ -41,7 +41,7 @@ class ReservationRepository extends BaseRepository implements IReservationReposi
         );
     }
 
-    public function getRecentWaitingWithBooks(int $limit): array
+    public function findRecentPendingReservationsWithBooks(int $limit): array
     {
         $sql = "SELECT r.*, b.Title, b.cover_url,
                        DATE_ADD(r.created_at, INTERVAL 7 DAY) AS expires_at
@@ -54,7 +54,7 @@ class ReservationRepository extends BaseRepository implements IReservationReposi
         return $this->fetchAll($sql);
     }
 
-    public function countWaiting(): int
+    public function countPendingReservations(): int
     {
         $row = $this->fetchOne(
             "SELECT COUNT(*) as cnt
@@ -65,7 +65,7 @@ class ReservationRepository extends BaseRepository implements IReservationReposi
         return (int)($row['cnt'] ?? 0);
     }
 
-    public function getAllActiveWithDetails(): array
+    public function findAllActiveReservationsWithDetails(): array
     {
         return $this->fetchAll(
             "SELECT r.*, b.Title, b.author, b.cover_url, u.name as user_name
@@ -77,7 +77,7 @@ class ReservationRepository extends BaseRepository implements IReservationReposi
         );
     }
 
-    public function hasActiveReservation(int $userId, int $bookId): bool
+    public function hasOpenReservation(int $userId, int $bookId): bool
     {
         $row = $this->fetchOne(
             "SELECT id
@@ -92,7 +92,7 @@ class ReservationRepository extends BaseRepository implements IReservationReposi
         return $row !== null;
     }
 
-    public function cancel(int $reservationId, int $userId): bool
+    public function cancelReservation(int $reservationId, int $userId): bool
     {
         return $this->execute(
             "UPDATE reservations SET Status = ? WHERE id = ? AND user_id = ?",
@@ -100,15 +100,34 @@ class ReservationRepository extends BaseRepository implements IReservationReposi
         );
     }
 
-    public function markAsReady(int $reservationId): bool
+    public function markReservationAsReady(int $reservationId): bool
     {
         return $this->execute(
             "UPDATE reservations
-             SET Status = ?
+             SET Status = ?,
+                 ready_at = NOW(),
+                 expires_at = DATE_ADD(NOW(), INTERVAL 7 DAY)
              WHERE id = ?
-               AND LOWER(COALESCE(Status, status, '')) = ?",
+               AND LOWER(COALESCE(Status, status, '')) = ?
+               AND COALESCE(expires_at, DATE_ADD(created_at, INTERVAL 7 DAY)) >= NOW()",
             [ReservationStatus::APPROVED->value, $reservationId, ReservationStatus::PENDING->value]
         );
     }
 
+    public function findReservedBooksByUser(int $userId): array
+    {
+        return $this->fetchAll(
+            "SELECT b.*, 0 AS available_copies, r.Status, r.created_at
+             FROM reservations r
+             JOIN books b ON b.id = r.book_id
+             WHERE r.user_id = ?
+               AND r.Status IN (?, ?)
+             ORDER BY r.created_at DESC",
+            [
+                $userId,
+                ReservationStatus::PENDING->value,
+                ReservationStatus::APPROVED->value,
+            ]
+        );
+    }
 }

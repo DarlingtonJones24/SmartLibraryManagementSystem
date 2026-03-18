@@ -96,21 +96,10 @@
 .card-soft { background: var(--admin-surface); border-radius:10px; border:1px solid var(--card-border); }
 .card-soft h5, .card-soft h4 { margin:0 0 8px 0; }
 
-/* Table and controls styling to match screenshots */
-.table thead th { border-bottom: 1px solid rgba(0,0,0,0.06); color: #6b4f3f; }
-.table td, .table th { vertical-align: middle; }
 .btn-primary { background: var(--admin-accent); border-color: var(--admin-accent); }
 .btn-outline-primary { color: var(--admin-accent); border-color: rgba(243,156,43,0.15); }
 .btn-sm { border-radius:8px; }
 .btn-danger { background: transparent; border: 1px solid rgba(220,53,69,0.12); color: #c0392b; }
-
-/* Cover images */
-.cover { width:72px; height:auto; object-fit:cover; border-radius:6px; }
-/* ensure table first column (cover) doesn't shrink */
-table td:first-child, table th:first-child { width: 92px; }
-
-/* small badge look used in admin lists */
-.badge-soft { padding:6px 10px; border-radius:999px; background:#fff2e6; color:#7a4b2a; }
 
 /* responsive tweaks */
 @media (max-width: 991px) {
@@ -122,54 +111,36 @@ table td:first-child, table th:first-child { width: 92px; }
 
 /* Admin-only small cover used in admin tables/lists to match previous thumbnail size */
 .admin-cover { display:block; width:84px; height:112px; max-width:84px; object-fit:cover; border-radius:6px; }
-.admin-cover-col { width: 100px; vertical-align: middle; }
-table.table td.admin-cover-col, table.table th.admin-cover-col { vertical-align: middle; }
 
-/* Actions column: keep table layout & sizes, but align buttons using flexbox */
-.table td .list-actions,
-.table th .list-actions,
-.table td .actions-wrapper,
-.table th .actions-wrapper {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  justify-content: flex-end;
-  height: 100%;
-}
-.table td .list-actions form,
-.table td .actions-wrapper form { display: inline-flex; margin: 0; }
-.table td .list-actions .btn,
-.table td .actions-wrapper .btn { white-space: nowrap; }
+/* ================================================
+   ADMIN LISTS (BOOKS, LOANS, RESERVATIONS)
+   ================================================ */
 
-/* =========================================================
-   ADMIN BOOK LIST (CARD/LIST VIEW) - FIXED FAR RIGHT ACTIONS
-   ========================================================= */
-
-.admin-books .list-card {
+.admin-list .list-card {
   width: 100%;
   display: block;
 }
-.admin-books .list-inner {
+.admin-list .list-inner {
   display: flex;
   align-items: center;
   gap: 1rem;
   width: 100%;
 }
-.admin-books .list-thumb {
+.admin-list .list-thumb {
   flex: 0 0 84px;
 }
-.admin-books .list-thumb img {
+.admin-list .list-thumb img {
   width: 84px;
   height: 112px;
   object-fit: cover;
   border-radius: 6px;
   display: block;
 }
-.admin-books .list-details {
+.admin-list .list-details {
   flex: 1 1 auto;
   min-width: 0;
 }
-.admin-books .list-actions {
+.admin-list .list-actions {
   margin-left: auto;
   display: flex;
   gap: .5rem;
@@ -178,7 +149,7 @@ table.table td.admin-cover-col, table.table th.admin-cover-col { vertical-align:
   flex-wrap: nowrap;
   white-space: nowrap;
 }
-.admin-books .list-actions form { margin: 0; display: inline-flex; }
+.admin-list .list-actions form { margin: 0; display: inline-flex; }
 .admin-books .list-actions-mobile .btn { margin-right: .5rem; }
 
 /* -----------------------------

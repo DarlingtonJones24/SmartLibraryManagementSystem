@@ -19,30 +19,57 @@ class LoanService implements ILoanService
         $this->copies = $copies ?? new BookCopyRepository();
     }
 
-    public function getMyLoans(int $userId): array
+    public function getActiveLoansForUser(int $userId): array
     {
-        return $this->loans->getActiveByUser($userId);
+        return $this->loans->findActiveLoansByUser($userId);
     }
 
     public function returnBook(int $loanId, int $userId): bool
     {
-        return $this->loans->returnLoan($loanId, $userId);
+        return $this->loans->markLoanAsReturned($loanId, $userId);
     }
 
-    public function borrow(int $userId, int $bookId): bool
+    public function returnBookForAdmin(int $loanId): bool
     {
-        // Find an available copy
+        return $this->loans->markLoanAsReturnedByLibrarian($loanId);
+    }
+
+    public function borrowBook(int $userId, int $bookId): bool
+    {
         $copyId = $this->copies->findAvailableCopyId($bookId);
 
         if ($copyId === null) {
-            return false; // no copy available
+            return false;
         }
 
-        // Default loan period: 14 days
-        $dueAt = date('Y-m-d H:i:s', strtotime('+14 days'));
-
-        $newLoanId = $this->loans->create($userId, $copyId, $dueAt);
+        $dueAt = (new \DateTimeImmutable('+14 days'))->format('Y-m-d H:i:s');
+        $newLoanId = $this->loans->createLoan($userId, $copyId, $dueAt);
 
         return $newLoanId > 0;
+    }
+
+    public function countActiveLoans(): int
+    {
+        return $this->loans->countActiveLoans();
+    }
+
+    public function countOverdueLoans(): int
+    {
+        return $this->loans->countOverdueLoans();
+    }
+
+    public function getRecentActiveLoans(int $limit = 5): array
+    {
+        return $this->loans->findRecentActiveLoans($limit);
+    }
+
+    public function getActiveLoansForAdmin(): array
+    {
+        return $this->loans->findAllActiveLoansWithDetails();
+    }
+
+    public function getLoanDetails(int $loanId): ?array
+    {
+        return $this->loans->findLoanDetails($loanId);
     }
 }

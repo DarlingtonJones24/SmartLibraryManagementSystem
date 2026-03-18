@@ -27,7 +27,7 @@ class Auth
     public static function requireLogin(): void
     {
         if (!self::check()) {
-            header("Location: /index.php?route=login");
+            header("Location: /login");
             exit;
         }
     }

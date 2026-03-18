@@ -6,23 +6,22 @@ class Controller
 {
     public function __construct()
     {
-        TempData::start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
     }
 
     protected function render(string $viewPath, array $data = []): void
     {
-        $data['flash'] = TempData::get('flash');
+        $data['message'] = $this->getMessage();
         View::render($viewPath, $data);
     }
 
     protected function redirect(string $path): void
     {
-        // Handle old book detail redirect formats
-        if (preg_match('#^book/detail[&?]id=(\d+)$#', $path, $m)) {
-            $path = '/books/' . $m[1];
-        }
+        $path = $this->normalizeBookRedirectPath($path);
 
-        if (str_starts_with($path, 'http') || str_starts_with($path, '/')) {
+        if (strpos($path, 'http') === 0 || strpos($path, '/') === 0) {
             $target = $path;
         } else {
             $target = '/' . ltrim($path, '/');
@@ -32,8 +31,85 @@ class Controller
         exit;
     }
 
-    protected function flash(string $message, string $type = 'success'): void
+    protected function setMessage(string $text, string $type = 'success'): void
     {
-        TempData::set('flash', ['message' => $message, 'type' => $type]);
+        $_SESSION['message'] = [
+            'text' => $text,
+            'type' => $type,
+        ];
+    }
+
+    protected function isAjaxRequest(): bool
+    {
+        return !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+            && strtolower((string) $_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+    }
+
+    protected function json(array $payload, int $statusCode = 200): void
+    {
+        http_response_code($statusCode);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($payload);
+        exit;
+    }
+
+    protected function readJsonBody(): array
+    {
+        $rawBody = file_get_contents('php://input');
+
+        if ($rawBody === false || trim($rawBody) === '') {
+            return [];
+        }
+
+        $data = json_decode($rawBody, true);
+
+        if (!is_array($data)) {
+            return [];
+        }
+
+        return $data;
+    }
+
+    private function getMessage(): ?array
+    {
+        if (!isset($_SESSION['message'])) {
+            return null;
+        }
+
+        $message = $_SESSION['message'];
+        unset($_SESSION['message']);
+
+        return $message;
+    }
+
+    private function normalizeBookRedirectPath(string $path): string
+    {
+        if (strpos($path, 'book/detail') !== 0) {
+            return $path;
+        }
+
+        $query = '';
+        $questionMarkPosition = strpos($path, '?');
+
+        if ($questionMarkPosition !== false) {
+            $query = substr($path, $questionMarkPosition + 1);
+        } else {
+            $ampersandPosition = strpos($path, '&');
+
+            if ($ampersandPosition === false) {
+                return $path;
+            }
+
+            $query = substr($path, $ampersandPosition + 1);
+        }
+
+        parse_str($query, $params);
+        $bookId = (int) ($params['id'] ?? 0);
+
+        if ($bookId <= 0) {
+            return $path;
+        }
+
+        return '/books/' . $bookId;
     }
 }

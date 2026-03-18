@@ -4,19 +4,23 @@ namespace App\Repository;
 
 interface ILoanRepository
 {
-    public function getActiveByUser(int $userId): array;
+    public function findActiveLoansByUser(int $userId): array;
 
-    public function returnLoan(int $loanId, int $userId): bool;
+    public function markLoanAsReturned(int $loanId, int $userId): bool;
 
-    public function create(int $userId, int $copyId, string $dueAt): int;
+    public function markLoanAsReturnedByLibrarian(int $loanId): bool;
 
-    public function countActiveAll(): int;
+    public function createLoan(int $userId, int $copyId, string $dueAt): int;
 
-    public function countOverdue(): int;
+    public function countActiveLoans(): int;
 
-    public function getRecentActive(int $limit = 5): array;
+    public function countOverdueLoans(): int;
 
-    public function getRecent(int $limit = 5): array;
+    public function findRecentActiveLoans(int $limit = 5): array;
 
-    public function getAllActiveWithDetails(): array;
+    public function findLoanDetails(int $loanId): ?array;
+
+    public function findAllActiveLoansWithDetails(): array;
+
+    public function findOverdueBooksByUser(int $userId): array;
 }

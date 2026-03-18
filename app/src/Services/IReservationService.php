@@ -4,17 +4,17 @@ namespace App\Services;
 
 interface IReservationService
 {
-    public function getMyReservations(int $userId): array;
+    public function getActiveReservationsForUser(int $userId): array;
 
-    public function getRecentForAdminDashboard(): array;
+    public function getRecentPendingReservations(int $limit = 3): array;
 
-    public function getWaitingCount(): int;
+    public function countPendingReservations(): int;
 
-    public function getAllActiveReservations(): array;
+    public function getActiveReservationsForAdmin(): array;
 
-    public function reserve(int $userId, int $bookId): bool;
+    public function createReservation(int $userId, int $bookId): bool;
 
-    public function cancel(int $reservationId, int $userId): bool;
+    public function cancelReservation(int $reservationId, int $userId): bool;
 
-    public function markAsReady(int $reservationId): bool;
+    public function markReservationReady(int $reservationId): bool;
 }

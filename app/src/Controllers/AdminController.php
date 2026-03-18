@@ -5,191 +5,230 @@ namespace App\Controllers;
 use App\Framework\Auth;
 use App\Framework\Controller;
 use App\Services\BookService;
-use App\Repository\BookRepository;
-use App\Repository\LoanRepository;
-use App\Repository\ReservationRepository;
+use App\Services\IBookService;
+use App\Services\ILoanService;
+use App\Services\IReservationService;
+use App\Services\LoanService;
 use App\Services\ReservationService;
+use App\ViewModels\AdminBooksViewModel;
+use App\ViewModels\AdminDashboardViewModel;
+use App\ViewModels\AdminLoanDetailViewModel;
+use App\ViewModels\AdminLoansViewModel;
+use App\ViewModels\AdminReservationsViewModel;
 
 class AdminController extends Controller
 {
-    private BookService $bookService;
-    private ReservationService $reservationService;
-    private BookRepository $bookRepo;
-    private LoanRepository $loanRepo;
+    private IBookService $bookService;
+    private ILoanService $loanService;
+    private IReservationService $reservationService;
 
-    public function __construct()
-    {
-        // Initialize dependencies
-        $this->bookService = new BookService();
-        $this->bookRepo = new BookRepository();
-        $this->loanRepo = new LoanRepository();
-        $this->reservationService = new ReservationService(new ReservationRepository());
+    public function __construct(
+        ?IBookService $bookService = null,
+        ?ILoanService $loanService = null,
+        ?IReservationService $reservationService = null
+    ) {
+        parent::__construct();
+        $this->bookService = $bookService ?? new BookService();
+        $this->loanService = $loanService ?? new LoanService();
+        $this->reservationService = $reservationService ?? new ReservationService();
     }
 
-    public function dashboard(): void
+    public function showDashboard(): void
     {
         Auth::requireLibrarian();
 
-        // 1. Get stats from Repositories (No raw SQL here!)
-        $totalBooks = $this->bookRepo->countAll();
-        $availableTitles = $this->bookRepo->countAvailable();
-        $activeLoansCount = $this->loanRepo->countActiveAll();
-        
-        // Sum total copies via repository method
-        $totalCopies = $this->bookRepo->getTotalPhysicalCopiesCount();
-        $availableCopies = max(0, $totalCopies - $activeLoansCount);
-        
-        // Use repository for specific counts
-        $overdueCount = $this->loanRepo->countOverdue();
-        $waitingReservations = $this->reservationService->getWaitingCount();
-
-        // 2. Get Recent Lists
-        $recentLoans = $this->loanRepo->getRecentActive(5);
-        $recentReservations = $this->reservationService->getRecentForAdminDashboard();
+        $viewModel = AdminDashboardViewModel::fromData(
+            'Admin Dashboard',
+            $this->bookService->countBooks(),
+            $this->bookService->countAvailableCopies(),
+            $this->loanService->countActiveLoans(),
+            $this->loanService->countOverdueLoans(),
+            $this->reservationService->countPendingReservations(),
+            $this->bookService->countTotalCopies(),
+            $this->loanService->getRecentActiveLoans(),
+            $this->reservationService->getRecentPendingReservations()
+        );
 
         $this->render('Admin/dashboard', [
-            'title' => 'Admin Dashboard',
-            'totalBooks' => $totalBooks,
-            'available' => $availableTitles,
-            'activeLoans' => $activeLoansCount,
-            'totalCopies' => $totalCopies,
-            'availableCopies' => $availableCopies,
-            'overdue' => $overdueCount,
-            'reservations' => $waitingReservations,
-            'recentLoans' => $recentLoans,
-            'recentReservations' => $recentReservations,
+            'title' => $viewModel->title,
+            'adminDashboardViewModel' => $viewModel,
         ]);
     }
 
-    public function books(): void
+    public function showBooksPage(): void
     {
         Auth::requireLibrarian();
 
         $search = trim($_GET['q'] ?? '');
         $sort = trim($_GET['sort'] ?? 'title');
         $direction = trim($_GET['direction'] ?? 'asc');
-
-        $books = $this->bookService->getBooks($search, '', $sort, $direction);
+        $viewModel = AdminBooksViewModel::fromBooks(
+            'Manage Books',
+            $search,
+            $sort,
+            $direction,
+            $this->bookService->getCatalogBooks($search, '', $sort, $direction)
+        );
 
         $this->render('Admin/books/index', [
-            'title' => 'Manage Books',
-            'books' => $books,
-            'q' => $search,
-            'sort' => $sort,
-            'direction' => $direction,
+            'title' => $viewModel->title,
+            'adminBooksViewModel' => $viewModel,
         ]);
     }
 
-    public function showCreateForm(): void
+    public function showCreateBookForm(): void
     {
         Auth::requireLibrarian();
         $this->render('Admin/books/create', ['title' => 'Add Book']);
     }
 
-    public function create(): void
+    public function createBook(): void
     {
         Auth::requireLibrarian();
 
-        $data = $_POST; // Let the Service handle the trimming and logic
-        
-        if (empty(trim($data['Title'] ?? ''))) {
-            $this->flash('Title is required.', 'danger');
+        if (!$this->bookService->createBookWithCopies($_POST)) {
+            $this->setMessage('Failed to add book. Make sure the title is filled in.', 'danger');
             $this->redirect('admin/books/create');
             return;
         }
 
-        // Move the complex logic of creating a book + copies to the Service
-        $ok = $this->bookService->createFullBookEntry($data);
-
-        if ($ok) {
-            $this->flash('Book and copies added successfully.', 'success');
-        } else {
-            $this->flash('Failed to add book. Check system logs.', 'danger');
-        }
-
+        $this->setMessage('Book and copies added successfully.', 'success');
         $this->redirect('admin/books');
     }
 
-    public function showEditForm(): void
+    public function showEditBookForm(): void
     {
         Auth::requireLibrarian();
-        $id = (int)($_GET['id'] ?? 0);
-        
+        $id = (int) ($_GET['id'] ?? 0);
+
         if ($id <= 0) {
-            $this->flash('Invalid book id.', 'danger');
+            $this->setMessage('Invalid book id.', 'danger');
             $this->redirect('admin/books');
             return;
         }
 
-        $book = $this->bookService->getBook($id);
+        $book = $this->bookService->getBookDetails($id);
+
+        if ($book === null) {
+            $this->setMessage('Book not found.', 'danger');
+            $this->redirect('admin/books');
+            return;
+        }
+
         $this->render('Admin/books/edit', ['title' => 'Edit Book', 'book' => $book]);
     }
 
-    public function edit(): void
+    public function updateBook(): void
     {
         Auth::requireLibrarian();
-        $id = (int)($_POST['id'] ?? 0);
+        $id = (int) ($_POST['id'] ?? 0);
 
-        if ($id <= 0) {
-            $this->flash('Invalid book id.', 'danger');
+        if (!$this->bookService->updateBookDetails($id, $_POST)) {
+            $this->setMessage('Failed to update book.', 'danger');
             $this->redirect('admin/books');
             return;
         }
 
-        $ok = $this->bookService->updateBook($id, $_POST);
-
-        if ($ok) {
-            $this->flash('Book updated.', 'success');
-        } else {
-            $this->flash('Failed to update book.', 'danger');
-        }
-
+        $this->setMessage('Book updated.', 'success');
         $this->redirect('admin/books');
     }
 
-    public function delete(): void
+    public function deleteBook(): void
     {
         Auth::requireLibrarian();
-        $id = (int)($_POST['id'] ?? 0);
+        $id = (int) ($_POST['id'] ?? 0);
+        $result = $this->bookService->deleteBook($id);
 
-        $ok = ($id > 0) ? $this->bookService->deleteBook($id) : false;
-
-        if ($ok) {
-            $this->flash('Book deleted.', 'success');
-        } else {
-            $this->flash('Failed to delete book.', 'danger');
+        if (!$result['success']) {
+            $this->setMessage($result['message'], 'danger');
+            $this->redirect('admin/books');
+            return;
         }
 
+        $this->setMessage($result['message'], 'success');
         $this->redirect('admin/books');
     }
 
-    public function loansPage(): void
+    public function showLoansPage(): void
     {
         Auth::requireLibrarian();
-        $loans = $this->loanRepo->getAllActiveWithDetails();
-        $this->render('Admin/loans/index', ['title' => 'Manage Loans', 'loans' => $loans]);
+
+        $viewModel = AdminLoansViewModel::fromLoans(
+            'Manage Loans',
+            $this->loanService->getActiveLoansForAdmin()
+        );
+
+        $this->render('Admin/loans/index', [
+            'title' => $viewModel->title,
+            'adminLoansViewModel' => $viewModel,
+        ]);
     }
 
-    public function reservationsPage(): void
+    public function markLoanReturned(): void
     {
         Auth::requireLibrarian();
-        $reservations = $this->reservationService->getAllActiveReservations();
-        $this->render('Admin/reservation/index', ['title' => 'Manage Reservations', 'reservations' => $reservations]);
-    }
+        $loanId = (int) ($_POST['loan_id'] ?? 0);
 
-    public function processReservation(): void
-    {
-        Auth::requireLibrarian();
-        $reservationId = (int)($_POST['reservation_id'] ?? 0);
-
-        $ok = $this->reservationService->markAsReady($reservationId);
-
-        if ($ok) {
-            $this->flash('Reservation processed and marked ready.', 'success');
-        } else {
-            $this->flash('Unable to process reservation.', 'warning');
+        if ($loanId <= 0) {
+            $this->setMessage('Invalid loan id.', 'danger');
+            $this->redirect('admin/loans');
+            return;
         }
 
+        $ok = $this->loanService->returnBookForAdmin($loanId);
+
+        $this->setMessage(
+            $ok ? 'Loan marked as returned.' : 'Unable to mark this loan as returned.',
+            $ok ? 'success' : 'danger'
+        );
+        $this->redirect('admin/loans');
+    }
+
+    public function showLoanDetails(): void
+    {
+        Auth::requireLibrarian();
+        $loanId = (int) ($_GET['id'] ?? 0);
+        $loan = $this->loanService->getLoanDetails($loanId);
+
+        if ($loan === null) {
+            $this->setMessage('Loan not found.', 'danger');
+            $this->redirect('admin/loans');
+            return;
+        }
+
+        $viewModel = AdminLoanDetailViewModel::fromLoan($loan);
+
+        $this->render('Admin/loans/show', [
+            'title' => $viewModel->title,
+            'adminLoanDetailViewModel' => $viewModel,
+        ]);
+    }
+
+    public function showReservationsPage(): void
+    {
+        Auth::requireLibrarian();
+
+        $viewModel = AdminReservationsViewModel::fromReservations(
+            'Manage Reservations',
+            $this->reservationService->getActiveReservationsForAdmin()
+        );
+
+        $this->render('Admin/reservation/index', [
+            'title' => $viewModel->title,
+            'adminReservationsViewModel' => $viewModel,
+        ]);
+    }
+
+    public function markReservationReady(): void
+    {
+        Auth::requireLibrarian();
+        $reservationId = (int) ($_POST['reservation_id'] ?? 0);
+        $ok = $this->reservationService->markReservationReady($reservationId);
+
+        $this->setMessage(
+            $ok ? 'Reservation processed and marked ready.' : 'Unable to process reservation.',
+            $ok ? 'success' : 'warning'
+        );
         $this->redirect('admin/reservation');
     }
 }

@@ -31,7 +31,6 @@
           <div class="d-flex justify-content-between align-items-center mb-3">
             <button class="btn btn-primary w-100">Login</button>
           </div>
-          <div class="text-center mb-2"><a href="/forgot-password" class="small">Forgot Password?</a></div>
 
           <p class="text-muted small mt-3 mb-0">
             Don't have an account? <a href="/register">Register now</a>

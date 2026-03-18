@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Framework\Validator;
 use App\Repository\IUserRepository;
 use App\Repository\UserRepository;
 
@@ -38,6 +39,38 @@ class AuthService implements IAuthService
             'name' => $user['name'] ?? ($user['Name'] ?? null),
             'email' => $user['Email'],
             'role' => $user['role']
+        ];
+    }
+
+    public function registerMember(string $name, string $email, string $password, string $confirmPassword): array
+    {
+        $name = trim($name);
+        $email = trim($email);
+
+        if ($name === '' || $email === '' || $password === '' || $confirmPassword === '') {
+            return ['success' => false, 'message' => 'All fields are required.'];
+        }
+
+        if (!Validator::email($email)) {
+            return ['success' => false, 'message' => 'Invalid email address.'];
+        }
+
+        if ($password !== $confirmPassword) {
+            return ['success' => false, 'message' => 'Passwords do not match.'];
+        }
+
+        if ($this->users->emailExists($email)) {
+            return ['success' => false, 'message' => 'An account with that email already exists.'];
+        }
+
+        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+        $created = $this->users->createMember($name, $email, $passwordHash);
+
+        return [
+            'success' => $created,
+            'message' => $created
+                ? 'Account created. Please login.'
+                : 'Registration failed. Please try again.',
         ];
     }
 }

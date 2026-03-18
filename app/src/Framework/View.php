@@ -2,10 +2,13 @@
 
 namespace App\Framework;
 
+use App\ViewModels\LayoutViewModel;
+
 class View
 {
     public static function render(string $viewPath, array $data = []): void
     {
+        $data['layout'] = $data['layout'] ?? LayoutViewModel::fromRequest();
         extract($data);
 
         $base = __DIR__ . '/../Views/';

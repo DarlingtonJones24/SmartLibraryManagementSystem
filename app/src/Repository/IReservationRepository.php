@@ -4,19 +4,21 @@ namespace App\Repository;
 
 interface IReservationRepository
 {
-    public function create(int $bookId, int $userId, string $status): int;
+    public function createReservation(int $bookId, int $userId, string $status): int;
 
-    public function getByUser(int $userId): array;
+    public function findActiveReservationsByUser(int $userId): array;
 
-    public function getRecentWaitingWithBooks(int $limit): array;
+    public function findRecentPendingReservationsWithBooks(int $limit): array;
 
-    public function countWaiting(): int;
+    public function countPendingReservations(): int;
 
-    public function getAllActiveWithDetails(): array;
+    public function findAllActiveReservationsWithDetails(): array;
 
-    public function hasActiveReservation(int $userId, int $bookId): bool;
+    public function hasOpenReservation(int $userId, int $bookId): bool;
 
-    public function cancel(int $reservationId, int $userId): bool;
+    public function cancelReservation(int $reservationId, int $userId): bool;
 
-    public function markAsReady(int $reservationId): bool;
+    public function markReservationAsReady(int $reservationId): bool;
+
+    public function findReservedBooksByUser(int $userId): array;
 }

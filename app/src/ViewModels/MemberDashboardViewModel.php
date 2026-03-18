@@ -5,13 +5,13 @@ namespace App\ViewModels;
 class MemberDashboardViewModel
 {
     public string $title;
-    public array $loans;
-    public array $reservations;
+    public string $displayName;
+    public CatalogViewModel $catalog;
 
-    public function __construct(string $title, array $loans, array $reservations)
+    public function __construct(string $title, string $displayName, CatalogViewModel $catalog)
     {
         $this->title = $title;
-        $this->loans = $loans;
-        $this->reservations = $reservations;
+        $this->displayName = $displayName;
+        $this->catalog = $catalog;
     }
 }
