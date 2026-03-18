@@ -72,10 +72,28 @@ class BookService implements IBookService
         return $this->books->findBookDetails($id);
     }
 
-    public function createBookWithCopies(array $data): bool
+    public function createBookWithCopies(array $data): array
     {
         $bookData = $this->normalizeBookData($data);
-        return $bookData['Title'] !== '' && $this->books->createBookWithCopies($bookData);
+        $validationMessage = $this->validateBookData($bookData);
+
+        if ($validationMessage !== null) {
+            return [
+                'success' => false,
+                'message' => $validationMessage,
+                'bookData' => $bookData,
+            ];
+        }
+
+        $created = $this->books->createBookWithCopies($bookData);
+
+        return [
+            'success' => $created,
+            'message' => $created
+                ? 'Book and copies added successfully.'
+                : 'Failed to add book. Please try again.',
+            'bookData' => $bookData,
+        ];
     }
 
     public function updateBookDetails(int $id, array $data): bool
@@ -86,7 +104,7 @@ class BookService implements IBookService
 
         $bookData = $this->normalizeBookData($data);
 
-        if ($bookData['Title'] === '') {
+        if ($this->validateBookData($bookData) !== null) {
             return false;
         }
 
@@ -145,6 +163,30 @@ class BookService implements IBookService
             'Description' => trim((string) ($data['Description'] ?? '')),
             'total_copies' => max(0, (int) ($data['total_copies'] ?? 0)),
         ];
+    }
+
+    private function validateBookData(array $bookData): ?string
+    {
+        if ($bookData['Title'] === '') {
+            return 'Title is required.';
+        }
+
+        if ($bookData['author'] === '') {
+            return 'Author is required.';
+        }
+
+        if ((int) $bookData['total_copies'] < 1) {
+            return 'Total copies must be at least 1.';
+        }
+
+        if (
+            $bookData['published_year'] !== ''
+            && !ctype_digit((string) $bookData['published_year'])
+        ) {
+            return 'Published year must be a number.';
+        }
+
+        return null;
     }
 
     private function filterAndSortBooks(array $books, string $search, string $sort, string $direction): array

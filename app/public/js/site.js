@@ -1,9 +1,3 @@
-window.libraryApp = {
-  buildAlertHtml: buildAlertHtml,
-  escapeHtml: escapeHtml,
-  updateNotificationBadge: updateNotificationBadge
-};
-
 document.addEventListener('DOMContentLoaded', function () {
   setupCatalogView();
 });
@@ -102,4 +96,61 @@ function updateNotificationBadge(count) {
   }
 
   badge.textContent = String(count);
+}
+
+function getJson(url, onSuccess, onError) {
+  fetch(url, {
+    headers: {
+      Accept: 'application/json'
+    }
+  })
+    .then(function (response) {
+      handleJsonResponse(response, onSuccess, onError);
+    })
+    .catch(function () {
+      if (onError) {
+        onError(null);
+      }
+    });
+}
+
+function postJson(url, data, onSuccess, onError) {
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+    .then(function (response) {
+      handleJsonResponse(response, onSuccess, onError);
+    })
+    .catch(function () {
+      if (onError) {
+        onError(null);
+      }
+    });
+}
+
+function handleJsonResponse(response, onSuccess, onError) {
+  response.json()
+    .then(function (data) {
+      if (response.ok) {
+        if (onSuccess) {
+          onSuccess(data);
+        }
+
+        return;
+      }
+
+      if (onError) {
+        onError(data);
+      }
+    })
+    .catch(function () {
+      if (onError) {
+        onError(null);
+      }
+    });
 }

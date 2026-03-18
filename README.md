@@ -47,7 +47,7 @@ If you already have an old Docker database volume on your machine, run `docker-c
 - Sessions are used for login.
 - Role checks are used for member and admin actions.
 
-## GDPR and WCAG
+## GDPR(General Data Protection Regulation) and WCAG
 - Only basic user data needed for the system is stored.
 - Users only see their own loans and reservations.
 - Forms use labels and the pages use clear headings and readable structure.

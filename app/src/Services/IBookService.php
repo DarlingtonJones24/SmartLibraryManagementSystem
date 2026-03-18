@@ -14,7 +14,7 @@ interface IBookService
 
     public function getBookDetails(int $id): ?array;
 
-    public function createBookWithCopies(array $data): bool;
+    public function createBookWithCopies(array $data): array;
 
     public function updateBookDetails(int $id, array $data): bool;
 

@@ -86,13 +86,18 @@ class AdminController extends Controller
     {
         Auth::requireLibrarian();
 
-        if (!$this->bookService->createBookWithCopies($_POST)) {
-            $this->setMessage('Failed to add book. Make sure the title is filled in.', 'danger');
-            $this->redirect('admin/books/create');
+        $result = $this->bookService->createBookWithCopies($_POST);
+
+        if (!$result['success']) {
+            $this->setMessage($result['message'], 'danger');
+            $this->render('Admin/books/create', [
+                'title' => 'Add Book',
+                'book' => $result['bookData'],
+            ]);
             return;
         }
 
-        $this->setMessage('Book and copies added successfully.', 'success');
+        $this->setMessage($result['message'], 'success');
         $this->redirect('admin/books');
     }
 

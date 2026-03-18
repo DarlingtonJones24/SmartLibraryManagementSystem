@@ -1,8 +1,8 @@
-(function () {
+document.addEventListener('DOMContentLoaded', function () {
   loadDashboardCounts();
   loadNotificationCount();
   enableAjaxForms();
-})();
+});
 
 function loadDashboardCounts() {
   var loanCount = document.querySelector('[data-js="loan-count"]');
@@ -12,34 +12,15 @@ function loadDashboardCounts() {
     return;
   }
 
-  fetch('/api/user/dashboard', {
-    headers: {
-      Accept: 'application/json'
+  getJson('/api/user/dashboard', function (data) {
+    if (loanCount) {
+      loanCount.textContent = String(data.loanCount || 0);
     }
-  })
-    .then(function (response) {
-      return response.json().then(function (data) {
-        return {
-          ok: response.ok,
-          data: data
-        };
-      });
-    })
-    .then(function (result) {
-      if (!result.ok || !result.data) {
-        return;
-      }
 
-      if (loanCount) {
-        loanCount.textContent = String(result.data.loanCount || 0);
-      }
-
-      if (reservationCount) {
-        reservationCount.textContent = String(result.data.reservationCount || 0);
-      }
-    })
-    .catch(function () {
-    });
+    if (reservationCount) {
+      reservationCount.textContent = String(data.reservationCount || 0);
+    }
+  });
 }
 
 function loadNotificationCount() {
@@ -47,28 +28,9 @@ function loadNotificationCount() {
     return;
   }
 
-  fetch('/api/user/notifications', {
-    headers: {
-      Accept: 'application/json'
-    }
-  })
-    .then(function (response) {
-      return response.json().then(function (data) {
-        return {
-          ok: response.ok,
-          data: data
-        };
-      });
-    })
-    .then(function (result) {
-      if (!result.ok || !result.data || !window.libraryApp) {
-        return;
-      }
-
-      window.libraryApp.updateNotificationBadge(result.data.count || 0);
-    })
-    .catch(function () {
-    });
+  getJson('/api/user/notifications', function (data) {
+    updateNotificationBadge(data.count || 0);
+  });
 }
 
 function enableAjaxForms() {
@@ -93,36 +55,19 @@ function sendAjaxForm(form) {
     return;
   }
 
-  fetch(apiUrl, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  })
-    .then(function (response) {
-      return response.json().then(function (json) {
-        return {
-          ok: response.ok,
-          data: json
-        };
-      });
-    })
-    .then(function (result) {
-      if (!result.ok || !result.data || result.data.success !== true) {
-        showPageMessage(form, result.data && result.data.message ? result.data.message : 'Unable to save your changes.', 'danger');
-        return;
-      }
+  postJson(apiUrl, data, function (result) {
+    if (result.success !== true) {
+      showPageMessage(form, result.message || 'Unable to save your changes.', 'danger');
+      return;
+    }
 
-      showPageMessage(form, result.data.message || 'Saved successfully.', 'success');
-      removeCardFromList(form);
-      loadDashboardCounts();
-      loadNotificationCount();
-    })
-    .catch(function () {
-      showPageMessage(form, 'Unable to save your changes.', 'danger');
-    });
+    showPageMessage(form, result.message || 'Saved successfully.', 'success');
+    removeCardFromList(form);
+    loadDashboardCounts();
+    loadNotificationCount();
+  }, function (result) {
+    showPageMessage(form, result && result.message ? result.message : 'Unable to save your changes.', 'danger');
+  });
 }
 
 function getApiUrl(form) {
@@ -164,7 +109,7 @@ function showPageMessage(form, message, type) {
     return;
   }
 
-  messageBox.innerHTML = window.libraryApp.buildAlertHtml(message, type);
+  messageBox.innerHTML = buildAlertHtml(message, type);
 }
 
 function removeCardFromList(form) {
@@ -185,5 +130,5 @@ function removeCardFromList(form) {
   }
 
   emptyMessage = list.getAttribute('data-empty-message') || 'No items found.';
-  list.innerHTML = '<div class="card p-4 text-muted">' + window.libraryApp.escapeHtml(emptyMessage) + '</div>';
+  list.innerHTML = '<div class="card p-4 text-muted">' + escapeHtml(emptyMessage) + '</div>';
 }

@@ -5,7 +5,7 @@
 
 <div class="mb-3">
   <label class="form-label">Author</label>
-  <input type="text" name="author" class="form-control" value="<?= htmlspecialchars($book['author'] ?? '') ?>">
+  <input type="text" name="author" class="form-control" value="<?= htmlspecialchars($book['author'] ?? '') ?>" required>
 </div>
 
 <div class="row">
@@ -30,7 +30,7 @@
 
 <div class="mb-3">
   <label class="form-label">Total Copies</label>
-  <input type="number" name="total_copies" class="form-control" min="1" value="<?= htmlspecialchars($book['total_copies'] ?? 1) ?>">
+  <input type="number" name="total_copies" class="form-control" min="1" value="<?= htmlspecialchars($book['total_copies'] ?? 1) ?>" required>
 </div>
 
 <div class="mb-3">
