@@ -1,10 +1,9 @@
-/* Admin theme: sidebar + main content styles to match admin screenshots */
 
 :root {
-  --admin-bg: #4b3224; /* dark brown */
-  --admin-accent: #f39c2b; /* orange */
-  --admin-accent-yellow: #f3c04a; /* brighter yellow accent for sidebar */
-  --admin-surface: #fbf6f2; /* light surface */
+  --admin-bg: #4b3224; 
+  --admin-accent: #f39c2b; 
+  --admin-accent-yellow: #f3c04a; 
+  --admin-surface: #fbf6f2;
   --muted: #8b7a73;
   --card-border: rgba(0,0,0,0.06);
 }
@@ -41,20 +40,19 @@
 }
 .site-sidebar .nav-link i { font-size: 18px; width: 28px; text-align: center; }
 .site-sidebar .nav-link:hover {
-  background: rgba(243,192,74,0.08); /* subtle yellow hover */
+  background: rgba(243,192,74,0.08); 
   color: #fff;
   text-decoration: none;
   transform: translateX(2px);
 }
 .site-sidebar .nav-link.active {
   background: var(--admin-accent-yellow);
-  color: #2f1f1a; /* dark text for contrast */
+  color: #2f1f1a;
   border-left-color: rgba(0,0,0,0.06);
   box-shadow: none;
 }
 .site-sidebar .sidebar-footer { padding: 18px 16px; font-size: 13px; color: rgba(255,255,255,0.6); }
 
-/* Push main content to the right of fixed sidebar */
 .app-main { margin-left: 220px; min-height: 100vh; }
 .app-main.no-sidebar { margin-left: 0; }
 
@@ -92,7 +90,6 @@
   font-size:12px;
 }
 
-/* Cards and lists */
 .card-soft { background: var(--admin-surface); border-radius:10px; border:1px solid var(--card-border); }
 .card-soft h5, .card-soft h4 { margin:0 0 8px 0; }
 
@@ -101,7 +98,6 @@
 .btn-sm { border-radius:8px; }
 .btn-danger { background: transparent; border: 1px solid rgba(220,53,69,0.12); color: #c0392b; }
 
-/* responsive tweaks */
 @media (max-width: 991px) {
   .site-sidebar { width: 72px; }
   .sidebar-brand div { display: none; }
@@ -109,12 +105,7 @@
   .site-sidebar .nav-link span { display: none; }
 }
 
-/* Admin-only small cover used in admin tables/lists to match previous thumbnail size */
 .admin-cover { display:block; width:84px; height:112px; max-width:84px; object-fit:cover; border-radius:6px; }
-
-/* ================================================
-   ADMIN LISTS (BOOKS, LOANS, RESERVATIONS)
-   ================================================ */
 
 .admin-list .list-card {
   width: 100%;
@@ -152,9 +143,7 @@
 .admin-list .list-actions form { margin: 0; display: inline-flex; }
 .admin-books .list-actions-mobile .btn { margin-right: .5rem; }
 
-/* -----------------------------
-   Dashboard: Stats + Recent UI
-   ----------------------------- */
+
 
 .dashboard-stats {
   display: grid;
@@ -253,9 +242,6 @@
   .dashboard-panels { grid-template-columns: 1fr; }
 }
 
-/* =========================
-   DASHBOARD PAGE (POLISHED)
-   ========================= */
 
 .admin-dashboard-page {
   padding: 18px 18px 28px;

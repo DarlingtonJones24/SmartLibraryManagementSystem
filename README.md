@@ -137,7 +137,7 @@ It reflects real-world needs while aligning with technical, security, and access
 
 ---
 
-### Demo/Test accounts
+### Test accounts
 Use these credentials to test both roles:
 
 ### Member account
@@ -148,5 +148,4 @@ Use these credentials to test both roles:
 - **Email:** danielbreczinski30@gmail.com
 - **Password:** password123
 
- Note: The login details are for testing--
 
